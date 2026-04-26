@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#0f0f1a"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- 背景 -->
+  <rect width="120" height="120" fill="url(#bg)" rx="8"/>
+  <!-- 星空背景 -->
+  <g opacity="0.5">
+    <circle cx="15" cy="15" r="1" fill="#fff"/>
+    <circle cx="30" cy="25" r="1.5" fill="#fff"/>
+    <circle cx="85" cy="20" r="1" fill="#fff"/>
+    <circle cx="100" cy="30" r="1.5" fill="#fff"/>
+    <circle cx="50" cy="10" r="1" fill="#fff"/>
+  </g>
+  <!-- 玩家飞机 -->
+  <g filter="url(#glow)">
+    <!-- 飞机主体 -->
+    <polygon points="55,25 45,45 55,40 65,45" fill="#00f0ff"/>
+    <polygon points="55,25 50,35 60,35" fill="#22d3ee"/>
+    <!-- 驾驶舱 -->
+    <rect x="52" y="30" width="6" height="4" fill="#fff" opacity="0.8"/>
+    <!-- 子弹 -->
+    <line x1="55" y1="45" x2="55" y2="70" stroke="#39ff14" stroke-width="2">
+      <animate attributeName="y2" values="70;90;70" dur="0.3s" repeatCount="indefinite"/>
+    </line>
+    <line x1="45" y1="45" x2="45" y2="60" stroke="#39ff14" stroke-width="1" opacity="0.6"/>
+    <line x1="65" y1="45" x2="65" y2="60" stroke="#39ff14" stroke-width="1" opacity="0.6"/>
+  </g>
+  <!-- 敌机 -->
+  <g filter="url(#glow)">
+    <polygon points="30,70 25,85 35,80" fill="#ff2e88"/>
+    <polygon points="90,65 85,80 95,75" fill="#ff2e88"/>
+    <!-- Boss -->
+    <polygon points="60,80 40,100 50,95 70,95 80,100" fill="#ff2e88" opacity="0.8"/>
+    <rect x="55" y="85" width="10" height="5" fill="#b026ff"/>
+  </g>
+  <!-- 爆炸效果 -->
+  <circle cx="75" cy="55" r="6" fill="#ffe600" opacity="0.6">
+    <animate attributeName="r" values="6;10;6" dur="0.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0.2;0.6" dur="0.5s" repeatCount="indefinite"/>
+  </circle>
+  <!-- 霓虹边框 -->
+  <rect x="2" y="2" width="116" height="116" fill="none" stroke="#ff2e88" stroke-width="2" rx="8" opacity="0.6"/>
+  <!-- 标题 -->
+  <text x="60" y="108" text-anchor="middle" font-family="'Press Start 2P', monospace" font-size="7" fill="#ff2e88" filter="url(#glow)">SHOOTER</text>
+</svg>

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#0f0f1a"/>
+    </linearGradient>
+    <linearGradient id="city" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#252540"/>
+      <stop offset="100%" style="stop-color:#3a3a5c"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- 背景 -->
+  <rect width="120" height="120" fill="url(#bg)" rx="8"/>
+  <!-- 城市背景 -->
+  <g opacity="0.4">
+    <rect x="0" y="70" width="15" height="50" fill="url(#city)"/>
+    <rect x="20" y="60" width="12" height="60" fill="url(#city)"/>
+    <rect x="35" y="50" width="18" height="70" fill="url(#city)"/>
+    <rect x="60" y="65" width="10" height="55" fill="url(#city)"/>
+    <rect x="75" y="55" width="20" height="65" fill="url(#city)"/>
+    <rect x="100" y="70" width="20" height="50" fill="url(#city)"/>
+  </g>
+  <!-- 窗户灯光 -->
+  <g filter="url(#glow)" opacity="0.6">
+    <rect x="40" y="55" width="3" height="3" fill="#00f0ff"/>
+    <rect x="45" y="60" width="3" height="3" fill="#ff2e88"/>
+    <rect x="80" y="60" width="3" height="3" fill="#39ff14"/>
+    <rect x="85" y="65" width="3" height="3" fill="#ffe600"/>
+  </g>
+  <!-- 角色 -->
+  <g filter="url(#glow)">
+    <!-- 玩家 -->
+    <rect x="50" y="40" width="6" height="8" fill="#00f0ff"/>
+    <rect x="50" y="48" width="6" height="6" fill="#22d3ee"/>
+    <rect x="50" y="54" width="3" height="6" fill="#22d3ee"/>
+    <rect x="53" y="54" width="3" height="6" fill="#22d3ee"/>
+    <!-- 跑道 -->
+    <line x1="30" y1="60" x2="90" y2="60" stroke="#7c3aed" stroke-width="2" opacity="0.6"/>
+    <!-- 金币 -->
+    <circle cx="70" cy="35" r="4" fill="#ffe600" filter="url(#glow)">
+      <animate attributeName="cy" values="35;33;35" dur="0.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="85" cy="40" r="4" fill="#ffe600" filter="url(#glow)">
+      <animate attributeName="cy" values="40;38;40" dur="0.5s" repeatCount="indefinite"/>
+    </circle>
+    <!-- 敌人 -->
+    <rect x="25" y="42" width="5" height="5" fill="#ff2e88"/>
+  </g>
+  <!-- 跳跃轨迹 -->
+  <path d="M50 55 Q55 40 60 55" stroke="#00f0ff" stroke-width="1" fill="none" opacity="0.3"/>
+  <!-- 霓虹边框 -->
+  <rect x="2" y="2" width="116" height="116" fill="none" stroke="#7c3aed" stroke-width="2" rx="8" opacity="0.6"/>
+  <!-- 标题 -->
+  <text x="60" y="105" text-anchor="middle" font-family="'Press Start 2P', monospace" font-size="7" fill="#7c3aed" filter="url(#glow)">JUMP</text>
+</svg>

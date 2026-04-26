@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#0f0f1a"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- 背景 -->
+  <rect width="120" height="120" fill="url(#bg)" rx="8"/>
+  <!-- 星空 -->
+  <g opacity="0.4">
+    <circle cx="20" cy="20" r="1" fill="#fff"/>
+    <circle cx="50" cy="15" r="1.5" fill="#fff"/>
+    <circle cx="80" cy="25" r="1" fill="#fff"/>
+    <circle cx="100" cy="15" r="1" fill="#fff"/>
+    <circle cx="35" cy="100" r="1" fill="#fff"/>
+  </g>
+  <!-- 玩家飞船 -->
+  <g filter="url(#glow)">
+    <!-- 飞船 - 三角形 -->
+    <polygon points="60,35 50,50 70,50" fill="#22d3ee"/>
+    <polygon points="60,35 55,42 65,42" fill="#00f0ff"/>
+    <!-- 推进火焰 -->
+    <polygon points="55,50 60,65 65,50" fill="#ffe600" opacity="0.8">
+      <animate attributeName="points" values="55,50 60,65 65,50;55,50 60,70 65,50;55,50 60,65 65,50" dur="0.2s" repeatCount="indefinite"/>
+    </polygon>
+  </g>
+  <!-- 陨石 -->
+  <g filter="url(#glow)">
+    <!-- 大陨石 -->
+    <polygon points="25,30 20,45 30,50 40,45 35,30" fill="#3a3a5c"/>
+    <polygon points="25,35 28,40 32,38" fill="#252540"/>
+    <!-- 中陨石 -->
+    <polygon points="85,40 80,55 90,58 95,50" fill="#3a3a5c"/>
+    <!-- 小陨石碎片 -->
+    <polygon points="45,70 42,78 48,80" fill="#4a4a6a"/>
+    <polygon points="75,75 72,82 78,84" fill="#4a4a6a"/>
+    <!-- 碎裂动画 -->
+    <circle cx="30" cy="50" r="3" fill="#ffe600" opacity="0.5">
+      <animate attributeName="opacity" values="0.5;0;0.5" dur="0.8s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  <!-- 子弹轨迹 -->
+  <line x1="60" y1="50" x2="60" y2="75" stroke="#39ff14" stroke-width="1" opacity="0.6"/>
+  <!-- 超空间瞬移效果 -->
+  <circle cx="60" cy="45" r="8" fill="none" stroke="#b026ff" stroke-width="1" opacity="0.3">
+    <animate attributeName="r" values="8;20;8" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <!-- 霓虹边框 -->
+  <rect x="2" y="2" width="116" height="116" fill="none" stroke="#22d3ee" stroke-width="2" rx="8" opacity="0.6"/>
+  <!-- 标题 -->
+  <text x="60" y="108" text-anchor="middle" font-family="'Press Start 2P', monospace" font-size="6" fill="#22d3ee" filter="url(#glow)">ASTEROIDS</text>
+</svg>

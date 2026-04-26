@@ -1,0 +1,987 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   NEON ARCADE v2 — Cyberpunk Pixel Design System
+   ============================================ */
+
+:root {
+  --cyber-bg: #0f0f1a;
+  --cyber-surface: #1a1a2e;
+  --cyber-card: #252540;
+  --cyber-border: #3a3a5c;
+  --neon-blue: #00f0ff;
+  --neon-purple: #7C3AED;
+  --neon-cyan: #22D3EE;
+  --neon-pink: #FF2E88;
+  --neon-green: #39ff14;
+  --neon-yellow: #ffe600;
+  --radius: 12px;
+  --transition-speed: 200ms;
+  --transition-easing: cubic-bezier(0.33, 1, 0.68, 1);
+  --glow-min: 8px;
+  --glow-max: 24px;
+  --glow-min-opacity: 0.3;
+  --glow-max-opacity: 0.6;
+
+  /* ============ Fluid Typography Scale ============
+     Each step: clamp(min, fluid, max) — auto-scales between mobile & desktop.
+     Pixel font is reserved for headings/badges; body text uses readable sans/mono. */
+  --fs-pixel-xs:  clamp(9px, 1.6vw, 11px);    /* tags, footnotes */
+  --fs-pixel-sm:  clamp(10px, 2vw, 13px);   /* buttons, labels */
+  --fs-pixel-md:  clamp(13px, 2.6vw, 16px);  /* section titles */
+  --fs-pixel-lg:  clamp(16px, 3.6vw, 22px);  /* page titles */
+  --fs-pixel-xl:  clamp(20px, 5vw, 32px);  /* hero titles */
+
+  --fs-body-xs:   clamp(11px, 1.8vw, 12px);  /* meta, hints */
+  --fs-body-sm:   clamp(12px, 2vw, 14px);    /* secondary body */
+  --fs-body-md:   clamp(14px, 2.4vw, 16px);  /* primary body */
+  --fs-body-lg:   clamp(16px, 2.8vw, 18px);  /* lead paragraph */
+
+  --lh-tight: 1.2;
+  --lh-snug:  1.4;
+  --lh-base:  1.6;     /* CJK + Latin mixed body */
+  --lh-loose: 1.75;
+
+  /* Letter-spacing for pixel fonts (improves legibility of bitmap fonts) */
+  --ls-pixel: 0.04em;
+  --ls-pixel-loose: 0.12em;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  /* CJK-aware stack: Noto Sans SC for Chinese, JetBrains Mono for Latin/digits */
+  font-family: 'JetBrains Mono', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  font-size: var(--fs-body-md);
+  line-height: var(--lh-base);
+  background: var(--cyber-bg);
+  color: #c8c8d4;
+  /* Cross-browser font rendering — sharper text, smoother edges */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* Enable common ligatures + tabular figures (digits align in tables/scoreboards) */
+  font-feature-settings: 'liga' 1, 'kern' 1, 'tnum' 1;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+/* Pixel font specifically — bitmap fonts must NOT antialias */
+.font-pixel,
+.font-pixelZh {
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: geometricPrecision;
+  letter-spacing: var(--ls-pixel);
+  font-feature-settings: normal;
+}
+
+/* Body text & headings — apply readable defaults */
+h1, h2, h3, h4, h5, h6 {
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-pixel);
+}
+
+p {
+  line-height: var(--lh-base);
+}
+
+/* Tabular numbers for scoreboards/HUDs — digits keep equal width */
+.font-tnum,
+[class*="score"],
+.high-score {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--cyber-bg); }
+::-webkit-scrollbar-thumb { background: var(--cyber-border); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: var(--neon-blue); }
+
+/* ============================================
+   Neon Text Effects
+   ============================================ */
+
+.neon-text-blue {
+  color: var(--neon-blue);
+  text-shadow: 0 0 7px var(--neon-blue), 0 0 20px rgba(0,240,255,0.4), 0 0 42px rgba(0,240,255,0.15);
+}
+
+.neon-text-purple {
+  color: var(--neon-purple);
+  text-shadow: 0 0 7px var(--neon-purple), 0 0 20px rgba(176,38,255,0.4), 0 0 42px rgba(176,38,255,0.15);
+}
+
+.neon-text-pink {
+  color: var(--neon-pink);
+  text-shadow: 0 0 7px var(--neon-pink), 0 0 20px rgba(255,45,149,0.4), 0 0 42px rgba(255,45,149,0.15);
+}
+
+.neon-text-green {
+  color: var(--neon-green);
+  text-shadow: 0 0 7px var(--neon-green), 0 0 20px rgba(57,255,20,0.4), 0 0 42px rgba(57,255,20,0.15);
+}
+
+.neon-text-yellow {
+  color: var(--neon-yellow);
+  text-shadow: 0 0 7px var(--neon-yellow), 0 0 20px rgba(255,230,0,0.4), 0 0 42px rgba(255,230,0,0.15);
+}
+
+/* ============================================
+   Neon Buttons
+   ============================================ */
+
+.neon-btn {
+  @apply font-pixel text-xs px-6 py-3 border-2 bg-transparent cursor-pointer select-none;
+  position: relative;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all var(--transition-speed) var(--transition-easing);
+  /* Promote to GPU layer for smooth hover transitions */
+  will-change: box-shadow, background;
+}
+
+.neon-btn-blue {
+  @apply neon-btn;
+  color: var(--neon-blue);
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 5px rgba(0,240,255,0.3), inset 0 0 5px rgba(0,240,255,0.1);
+}
+
+.neon-btn-blue:hover {
+  background: rgba(0,240,255,0.1);
+  box-shadow: 0 0 15px rgba(0,240,255,0.5), inset 0 0 15px rgba(0,240,255,0.2), 0 0 30px rgba(0,240,255,0.2);
+  text-shadow: 0 0 7px var(--neon-blue);
+}
+
+.neon-btn-purple {
+  @apply neon-btn;
+  color: var(--neon-purple);
+  border-color: var(--neon-purple);
+  box-shadow: 0 0 5px rgba(176,38,255,0.3), inset 0 0 5px rgba(176,38,255,0.1);
+}
+
+.neon-btn-purple:hover {
+  background: rgba(176,38,255,0.1);
+  box-shadow: 0 0 15px rgba(176,38,255,0.5), inset 0 0 15px rgba(176,38,255,0.2), 0 0 30px rgba(176,38,255,0.2);
+  text-shadow: 0 0 7px var(--neon-purple);
+}
+
+.neon-btn-pink {
+  @apply neon-btn;
+  color: var(--neon-pink);
+  border-color: var(--neon-pink);
+  box-shadow: 0 0 5px rgba(255,45,149,0.3), inset 0 0 5px rgba(255,45,149,0.1);
+}
+
+.neon-btn-pink:hover {
+  background: rgba(255,45,149,0.1);
+  box-shadow: 0 0 15px rgba(255,45,149,0.5), inset 0 0 15px rgba(255,45,149,0.2), 0 0 30px rgba(255,45,149,0.2);
+  text-shadow: 0 0 7px var(--neon-pink);
+}
+
+.neon-btn-green {
+  @apply neon-btn;
+  color: var(--neon-green);
+  border-color: var(--neon-green);
+  box-shadow: 0 0 5px rgba(57,255,20,0.3), inset 0 0 5px rgba(57,255,20,0.1);
+}
+
+.neon-btn-green:hover {
+  background: rgba(57,255,20,0.1);
+  box-shadow: 0 0 15px rgba(57,255,20,0.5), inset 0 0 15px rgba(57,255,20,0.2), 0 0 30px rgba(57,255,20,0.2);
+  text-shadow: 0 0 7px var(--neon-green);
+}
+
+/* ============================================
+   Game Cards
+   ============================================ */
+
+.game-card {
+  @apply bg-cyber-card border border-cyber-border p-4 cursor-pointer transition-all duration-300 relative overflow-hidden;
+  /* Containment: layout & paint changes stay within this element */
+  contain: layout style paint;
+}
+
+.game-card::before {
+  content: '';
+  @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(0,240,255,0.05), transparent 60%);
+}
+
+.game-card:hover {
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 10px rgba(0,240,255,0.2), 0 0 25px rgba(0,240,255,0.1);
+  transform: translateY(-2px);
+}
+
+.game-card:hover::before {
+  opacity: 1;
+}
+
+.game-card:hover .card-icon {
+  filter: drop-shadow(0 0 6px var(--neon-blue));
+}
+
+/* ============================================
+   CRT Scanline Overlay
+   ============================================ */
+
+.crt-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  /* Own compositing layer — paint stays isolated from page content */
+  will-change: transform;
+  contain: strict;
+}
+
+.crt-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+}
+
+.crt-overlay::after {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: 0;
+  right: 0;
+  height: 200%;
+  background: linear-gradient(
+    transparent 0%,
+    rgba(0,240,255,0.015) 50%,
+    transparent 100%
+  );
+  /* translateY-only animation stays on the GPU compositor thread */
+  transform: translateY(0);
+  animation: scanline 8s linear infinite;
+  will-change: transform;
+}
+
+/* ============================================
+   Input Fields
+   ============================================ */
+
+.neon-input {
+  @apply w-full px-4 py-3 bg-cyber-surface border border-cyber-border text-gray-300 font-mono text-sm outline-none transition-all duration-200;
+}
+
+.neon-input:focus {
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 8px rgba(0,240,255,0.2), inset 0 0 8px rgba(0,240,255,0.05);
+}
+
+.neon-input::placeholder {
+  color: #4a4a6a;
+}
+
+/* ============================================
+   Neon Tag
+   ============================================ */
+
+.neon-tag {
+  @apply text-[10px] font-pixel px-2 py-1 border;
+  letter-spacing: 0.5px;
+}
+
+.neon-tag-blue {
+  @apply neon-tag;
+  color: var(--neon-blue);
+  border-color: rgba(0,240,255,0.4);
+  background: rgba(0,240,255,0.06);
+}
+
+.neon-tag-purple {
+  @apply neon-tag;
+  color: var(--neon-purple);
+  border-color: rgba(176,38,255,0.4);
+  background: rgba(176,38,255,0.06);
+}
+
+.neon-tag-pink {
+  @apply neon-tag;
+  color: var(--neon-pink);
+  border-color: rgba(255,45,149,0.4);
+  background: rgba(255,45,149,0.06);
+}
+
+.neon-tag-green {
+  @apply neon-tag;
+  color: var(--neon-green);
+  border-color: rgba(57,255,20,0.4);
+  background: rgba(57,255,20,0.06);
+}
+
+/* ============================================
+   Loading Animation
+   ============================================ */
+
+@keyframes loading-dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+.loading-text::after {
+  content: '';
+  animation: loading-dots 1.5s infinite;
+}
+
+/* ============================================
+   Glow Divider
+   ============================================ */
+
+.glow-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+  opacity: 0.3;
+}
+
+/* ============================================
+   Pixel Border Animation
+   ============================================ */
+
+.pixel-border-anim {
+  position: relative;
+}
+
+.pixel-border-anim::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 2px solid transparent;
+  pointer-events: none;
+  animation: border-glow-cycle 4s ease-in-out infinite;
+}
+
+@keyframes border-glow-cycle {
+  0%, 100% { border-color: var(--neon-blue); box-shadow: 0 0 5px rgba(0,240,255,0.2); }
+  33% { border-color: var(--neon-purple); box-shadow: 0 0 5px rgba(176,38,255,0.2); }
+  66% { border-color: var(--neon-pink); box-shadow: 0 0 5px rgba(255,45,149,0.2); }
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ============================================
+   Mobile-First Optimizations
+   ============================================ */
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (hover: none) {
+  .game-card:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--cyber-border);
+  }
+  .game-card:active {
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 10px rgba(0,240,255,0.2);
+  }
+  .neon-btn:hover {
+    background: transparent;
+  }
+  .neon-btn:active {
+    opacity: 0.8;
+  }
+}
+
+/* Reduce glow on mobile for performance */
+@media (hover: none) and (max-width: 768px) {
+  .neon-text-blue,
+  .neon-text-purple,
+  .neon-text-pink,
+  .neon-text-green,
+  .neon-text-yellow {
+    text-shadow: 0 0 5px currentColor, 0 0 10px rgba(255,255,255,0.1);
+  }
+  .game-card::before {
+    display: none;
+  }
+  .crt-overlay::after {
+    animation: none;
+  }
+  /* Release will-change on mobile — compositor layers waste VRAM on low-end GPUs */
+  .neon-btn,
+  .crt-overlay {
+    will-change: auto;
+  }
+}
+
+canvas {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+@media (hover: none) {
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@supports (height: 100dvh) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+}
+
+/* ============================================
+   Accessibility: Reduced Motion
+   Users with vestibular disorders / motion sensitivity
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .crt-overlay::after {
+    animation: none;
+  }
+
+  .pixel-border-anim::after {
+    animation: none;
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 5px rgba(0,240,255,0.2);
+  }
+}
+
+/* ============================================
+   Typography Helpers — apply consistent type scale
+   ============================================ */
+
+.title-hero {
+  font-family: 'Press Start 2P', monospace;
+  font-size: var(--fs-pixel-xl);
+  letter-spacing: var(--ls-pixel-loose);
+  line-height: var(--lh-tight);
+}
+.title-page {
+  font-family: 'Press Start 2P', monospace;
+  font-size: var(--fs-pixel-lg);
+  letter-spacing: var(--ls-pixel-loose);
+  line-height: var(--lh-tight);
+}
+.title-section {
+  font-family: 'Press Start 2P', monospace;
+  font-size: var(--fs-pixel-md);
+  letter-spacing: var(--ls-pixel);
+  line-height: var(--lh-snug);
+}
+.text-meta {
+  font-size: var(--fs-body-xs);
+  color: #6e6e85;
+  letter-spacing: 0.02em;
+}
+.text-body {
+  font-size: var(--fs-body-md);
+  line-height: var(--lh-base);
+  color: #b8b8c8;
+}
+.text-lead {
+  font-size: var(--fs-body-lg);
+  line-height: var(--lh-base);
+  color: #d0d0dc;
+}
+
+/* ============================================
+   "FRESH" badge for newly published games
+   Shown on planet labels & game cards for 7 days after creation
+   ============================================ */
+.fresh-badge {
+  display: inline-block;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  letter-spacing: 0.15em;
+  padding: 3px 6px;
+  color: #050510;
+  background: var(--neon-yellow);
+  box-shadow: 0 0 10px rgba(255,230,0,0.6), 0 0 24px rgba(255,230,0,0.25);
+  animation: fresh-pulse 1.6s ease-in-out infinite;
+}
+@keyframes fresh-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255,230,0,0.6), 0 0 24px rgba(255,230,0,0.25); }
+  50%      { transform: scale(1.06); box-shadow: 0 0 16px rgba(255,230,0,0.85), 0 0 36px rgba(255,230,0,0.4); }
+}
+
+/* ============================================
+   Spec card — used on UploadPage for format requirements
+   ============================================ */
+.spec-card {
+  background: linear-gradient(135deg, rgba(0,240,255,0.04), rgba(124,58,237,0.04));
+  border: 1px solid var(--cyber-border);
+  contain: layout style;
+}
+.spec-card .spec-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(58,58,92,0.5);
+}
+.spec-card .spec-row:last-child { border-bottom: none; }
+.spec-icon-ok    { color: var(--neon-green); }
+.spec-icon-warn  { color: var(--neon-yellow); }
+.spec-icon-bad   { color: var(--neon-pink); }
+
+/* ============================================
+   Game UI — score panel & HUD polish
+   ============================================ */
+.score-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(180deg, rgba(0,240,255,0.06), rgba(124,58,237,0.04));
+  border: 1px solid rgba(0,240,255,0.2);
+  border-radius: 8px;
+  contain: layout style;
+  position: relative;
+}
+.score-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(0,240,255,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+.score-panel .stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 6px 8px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+  border: 1px solid rgba(58,58,92,0.3);
+}
+.score-panel .stat-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: #6e6e85;
+  text-transform: uppercase;
+}
+.score-panel .stat-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(16px, 3.5vw, 22px);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* ============================================
+   Pause overlay — covers game canvas when paused
+   ============================================ */
+.pause-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15,15,26,0.88);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  animation: fade-in 0.25s ease-out;
+}
+@keyframes fade-in {
+  from { opacity: 0; } to { opacity: 1; }
+}
+
+/* ============================================
+   Leaderboard styling
+   ============================================ */
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(58,58,92,0.4);
+  background: rgba(26,26,46,0.5);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+.leaderboard-item:hover {
+  border-color: rgba(0,240,255,0.3);
+  background: rgba(0,240,255,0.05);
+}
+.leaderboard-item.rank-1 {
+  border-color: rgba(255,230,0,0.4);
+  background: rgba(255,230,0,0.08);
+}
+.leaderboard-item.rank-2,
+.leaderboard-item.rank-3 {
+  border-color: rgba(57,255,20,0.3);
+  background: rgba(57,255,20,0.05);
+}
+.leaderboard-rank {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  width: 32px;
+  text-align: center;
+}
+.leaderboard-avatar {
+  border-radius: 50%;
+  border: 2px solid rgba(58,58,92,0.5);
+}
+.leaderboard-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: #b8b8c8;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.leaderboard-score {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================
+   Card improvements — better visual hierarchy
+   ============================================ */
+.cyber-card {
+  background: linear-gradient(180deg, rgba(37,37,64,0.95), rgba(26,26,46,0.9));
+  border: 1px solid rgba(58,58,92,0.5);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.cyber-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,240,255,0.3), transparent);
+}
+.cyber-card-hover {
+  transition: all 0.25s ease;
+}
+.cyber-card-hover:hover {
+  border-color: rgba(0,240,255,0.4);
+  box-shadow: 0 4px 20px rgba(0,240,255,0.1), inset 0 1px 0 rgba(0,240,255,0.05);
+  transform: translateY(-1px);
+}
+
+/* ============================================
+   Section title improvements
+   ============================================ */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(58,58,92,0.4);
+}
+.section-title-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(58,58,92,0.3);
+}
+
+/* ============================================
+   Button improvements — better states
+   ============================================ */
+.cyber-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  padding: 10px 20px;
+  border: 2px solid;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.05em;
+  position: relative;
+  overflow: hidden;
+}
+.cyber-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.cyber-btn:hover::before {
+  opacity: 0.08;
+}
+.cyber-btn:active {
+  transform: scale(0.97);
+}
+.cyber-btn-sm {
+  font-size: 9px;
+  padding: 6px 14px;
+}
+.cyber-btn-lg {
+  font-size: 12px;
+  padding: 14px 28px;
+}
+
+/* ============================================
+   Form improvements
+   ============================================ */
+.form-group {
+  margin-bottom: 20px;
+}
+.form-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: #6e6e85;
+}
+.form-hint {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #4a4a6a;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================
+   Tags and badges improvements
+   ============================================ */
+.game-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid;
+  letter-spacing: 0.03em;
+}
+.game-tag-sm {
+  font-size: 8px;
+  padding: 3px 8px;
+}
+
+/* ============================================
+   Empty state improvements
+   ============================================ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  text-align: center;
+}
+.empty-state-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+.empty-state-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: #6e6e85;
+  margin-bottom: 16px;
+}
+
+/* ============================================
+   Virtual Controls — Mobile Touch Buttons
+   ============================================ */
+.virtual-controls {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.controls-direction {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.controls-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.virtual-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(15, 15, 26, 0.8);
+  backdrop-filter: blur(8px);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: all 0.1s ease;
+}
+
+.virtual-btn.direction {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  font-size: 20px;
+}
+
+.virtual-btn.direction[data-position="top"] { top: 0; left: 50%; transform: translateX(-50%); }
+.virtual-btn.direction[data-position="bottom"] { bottom: 0; left: 50%; transform: translateX(-50%); }
+.virtual-btn.direction[data-position="left"] { left: 0; top: 50%; transform: translateY(-50%); }
+.virtual-btn.direction[data-position="right"] { right: 0; top: 50%; transform: translateY(-50%); }
+
+/* Position classes for virtual buttons */
+.virtual-btn.pos-top { top: 0; left: 50%; transform: translateX(-50%); }
+.virtual-btn.pos-bottom { bottom: 0; }
+.virtual-btn.pos-left { left: 0; }
+.virtual-btn.pos-right { right: 0; }
+.virtual-btn.pos-center { left: 50%; transform: translateX(-50%); }
+
+.virtual-btn.action {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  border-color: rgba(0, 240, 255, 0.3);
+  font-size: 24px;
+}
+
+.virtual-btn .btn-icon {
+  color: #fff;
+}
+
+.virtual-btn .btn-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 4px;
+}
+
+.virtual-btn.pressed,
+.virtual-btn:active {
+  background: rgba(0, 240, 255, 0.3);
+  border-color: rgba(0, 240, 255, 0.8);
+  transform: scale(0.95);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+}
+
+/* D-pad layout for snake */
+.controls-direction[data-type="dpad"] {
+  position: relative;
+}
+
+/* Left/right only layout */
+.controls-direction[data-type="leftright"] {
+  display: flex;
+  justify-content: space-between;
+  width: 140px;
+  height: 56px;
+}
+
+/* Custom layout (asteroids) */
+.controls-direction[data-type="custom"] {
+  display: flex;
+  justify-content: space-between;
+  width: 140px;
+  height: 56px;
+}
+
+/* Mobile-only: show virtual controls */
+@media (max-width: 768px) {
+  .virtual-controls {
+    display: flex;
+  }
+}
+
+@media (min-width: 769px) {
+  .virtual-controls {
+    display: none;
+  }
+}
+
+/* ============================================
+   Animations for tutorial overlay
+   ============================================ */
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}

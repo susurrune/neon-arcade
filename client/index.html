@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <!-- Primary meta -->
+    <meta name="description" content="霓虹街机 — 赛博朋克像素风在线游戏平台。贪吃蛇、俄罗斯方块、平台跳跃、飞机大战，在互动宇宙中探索游戏星球。" />
+    <meta name="keywords" content="霓虹街机,在线小游戏,像素游戏,赛博朋克,贪吃蛇,俄罗斯方块,pixel game,neon arcade" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#0f0f1a" />
+    <meta name="color-scheme" content="dark" />
+
+    <!-- PWA / iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="霓虹街机" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="NEON ARCADE — 霓虹街机" />
+    <meta property="og:description" content="赛博朋克像素风在线游戏平台 — 在互动宇宙中探索经典街机游戏" />
+    <meta property="og:image" content="/og-cover.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:locale:alternate" content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="NEON ARCADE — 霓虹街机" />
+    <meta name="twitter:description" content="赛博朋克像素风在线游戏平台" />
+    <meta name="twitter:image" content="/og-cover.png" />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Font loading strategy:
+         preconnect establishes the TCP/TLS handshake early.
+         The stylesheet is non-blocking via media trick (onload swap). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      Critical fonts only in the initial request; others loaded async.
+      Press Start 2P (pixel UI) + JetBrains Mono (body) are critical.
+      ZCOOL + Noto Sans SC are deferred via &display=optional.
+    -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Noto+Sans+SC:wght@400;700&display=optional"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet" />
+    </noscript>
+
+    <title>NEON ARCADE — 霓虹街机</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
