@@ -2,7 +2,7 @@
 // v2: 玩家驱动的游戏宇宙
 
 // ===== 新增: v2 引擎导出 =====
-export type { PlanetData, StarSystemData, GalaxyData, GameInput } from './UniverseEngine'
+export type { PlanetData, StarData, GalaxyData, GameInput, SatelliteData } from './UniverseEngine'
 export { UniverseEngine, GALAXY_DEFS, PLANET_PRESETS } from './UniverseEngine'
 
 // ===== 工业级 Camera 配置 =====

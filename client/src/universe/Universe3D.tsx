@@ -1,13 +1,13 @@
-// ============ 宇宙3D组件 v2 — 玩家驱动的游戏宇宙 ============
+// ============ 宇宙3D组件 v3 — 新层级结构 ============
+// 恒星 = 星系中心，行星 = 发布者，卫星 = 游戏
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import * as THREE from 'three'
-import { UniverseEngine, PlanetData, StarSystemData, GALAXY_DEFS, GameInput } from './UniverseEngine'
+import {
+  UniverseEngine, PlanetData, StarData, SatelliteData, GALAXY_DEFS, GameInput,
+} from './UniverseEngine'
 import { UniverseRenderer } from './UniverseRenderer'
 import { useGameStore } from '../store/gameStore'
-import { gameApi, scoreApi } from '../api'
 import { Avatar } from '../components/Avatar'
-import { t } from '../i18n'
 import type { GameInfo } from '../api'
 
 // ==================== 宇宙主页组件 ====================
@@ -20,8 +20,9 @@ export default function Universe3D() {
   const { games, setGames, user, lang, loadHighScore } = useGameStore()
   const navigate = useNavigate()
 
+  const [selectedSatellite, setSelectedSatellite] = useState<SatelliteData | null>(null)
   const [selectedPlanet, setSelectedPlanet] = useState<PlanetData | null>(null)
-  const [selectedStar, setSelectedStar] = useState<StarSystemData | null>(null)
+  const [selectedStar, setSelectedStar] = useState<StarData | null>(null)
   const [showHint, setShowHint] = useState(true)
 
   // 星系显隐状态
@@ -30,29 +31,24 @@ export default function Universe3D() {
   )
 
   const isZh = lang === 'zh'
-
-  // 初始化（用 ref 防止 StrictMode 双重渲染导致两个 canvas）
   const initializedRef = useRef(false)
 
   useEffect(() => {
     if (!containerRef.current) return
-    // StrictMode 会在开发模式下执行两次 useEffect，跳过第二次
     if (initializedRef.current) return
     initializedRef.current = true
 
     const engine = new UniverseEngine()
     engineRef.current = engine
 
-    // 加载游戏数据并构建宇宙 — 必须在创建渲染器之前，因为渲染器构造时就会读取 engine 数据
-    const gameInputs: GameInput[] = (games.length > 0 ? games : FALLBACK_GAMES).map((g: any) => ({
+    const gameInputs: GameInput[] = (games.length > 0 ? games : FALLBACK_GAMES).map((g: GameInfo) => ({
       id: g.id,
       name: g.name,
       description: g.description || '',
       tags: g.tags || ['益智'],
-      authorId: g.authorId || (g.isOfficial ? 'system' : g.authorId),
+      authorId: g.authorId || (g.isOfficial ? 'system' : undefined),
       authorName: g.authorName || (g.isOfficial ? 'NEON ARCADE' : ''),
       authorAvatar: g.authorAvatar || 'preset:1',
-      // 作者恒星效果
       authorStarColor: g.authorStarColor || '#ffaa00',
       authorStarGlow: g.authorStarGlow ?? 0.5,
       authorStarRing: g.authorStarRing ?? false,
@@ -74,29 +70,34 @@ export default function Universe3D() {
       containerRef.current,
       engine,
       {
-        onPlanetClick: (planet) => {
-          setSelectedPlanet(planet)
+        onSatelliteClick: (satellite) => {
+          setSelectedSatellite(satellite)
+          setSelectedPlanet(null)
           setSelectedStar(null)
         },
-        onPlanetDoubleClick: (planet) => {
-          // 双击直接进入游戏
-          navigate(`/game/${planet.gameId}`)
+        onSatelliteDoubleClick: (satellite) => {
+          navigate(`/game/${satellite.gameId}`)
+        },
+        onPlanetClick: (planet) => {
+          setSelectedPlanet(planet)
+          setSelectedSatellite(null)
+          setSelectedStar(null)
         },
         onStarClick: (star) => {
           setSelectedStar(star)
+          setSelectedSatellite(null)
           setSelectedPlanet(null)
         },
         onBackgroundClick: () => {
+          setSelectedSatellite(null)
           setSelectedPlanet(null)
           setSelectedStar(null)
         },
       },
     )
     rendererRef.current = renderer
-
     renderer.start()
 
-    // 隐藏提示
     const timer = setTimeout(() => setShowHint(false), 5000)
 
     return () => {
@@ -109,17 +110,15 @@ export default function Universe3D() {
   // 当 games 更新时重建宇宙
   useEffect(() => {
     if (!engineRef.current || !rendererRef.current) return
-    // 即使 games 为空也允许重建（用 fallback 数据）
 
-    const gameInputs: GameInput[] = (games.length > 0 ? games : FALLBACK_GAMES).map((g: any) => ({
+    const gameInputs: GameInput[] = (games.length > 0 ? games : FALLBACK_GAMES).map((g: GameInfo) => ({
       id: g.id,
       name: g.name,
       description: g.description || '',
       tags: g.tags || ['益智'],
-      authorId: g.authorId || (g.isOfficial ? 'system' : g.authorId),
+      authorId: g.authorId || (g.isOfficial ? 'system' : undefined),
       authorName: g.authorName || (g.isOfficial ? 'NEON ARCADE' : ''),
       authorAvatar: g.authorAvatar || 'preset:1',
-      // 作者恒星效果
       authorStarColor: g.authorStarColor || '#ffaa00',
       authorStarGlow: g.authorStarGlow ?? 0.5,
       authorStarRing: g.authorStarRing ?? false,
@@ -143,30 +142,33 @@ export default function Universe3D() {
   useEffect(() => {
     if (!rendererRef.current || !engineRef.current) return
 
-    if (selectedPlanet) {
+    if (selectedSatellite) {
+      const pos = engineRef.current.getSatelliteWorldPos(selectedSatellite)
+      rendererRef.current.flyTo(pos)
+    } else if (selectedPlanet) {
       const pos = engineRef.current.getPlanetWorldPos(selectedPlanet)
       rendererRef.current.flyTo(pos)
     } else if (selectedStar) {
       const pos = engineRef.current.getStarWorldPos(selectedStar)
       rendererRef.current.flyTo(pos)
     }
-  }, [selectedPlanet, selectedStar])
+  }, [selectedSatellite, selectedPlanet, selectedStar])
 
   // 进入游戏
   const handleEnterGame = useCallback(() => {
-    if (selectedPlanet) {
-      navigate(`/game/${selectedPlanet.gameId}`)
+    if (selectedSatellite) {
+      navigate(`/game/${selectedSatellite.gameId}`)
     }
-  }, [selectedPlanet, navigate])
+  }, [selectedSatellite, navigate])
 
   // 查看用户资料
   const handleViewProfile = useCallback(() => {
-    if (selectedStar) {
-      navigate(`/profile?id=${selectedStar.ownerId}`)
+    if (selectedPlanet) {
+      navigate(`/profile?id=${selectedPlanet.ownerId}`)
     }
-  }, [selectedStar, navigate])
+  }, [selectedPlanet, navigate])
 
-  const highScore = selectedPlanet ? loadHighScore(selectedPlanet.gameId) : 0
+  const highScore = selectedSatellite ? loadHighScore(selectedSatellite.gameId) : 0
 
   return (
     <div className="fixed inset-0 bg-[#050510] overflow-hidden">
@@ -187,8 +189,8 @@ export default function Universe3D() {
 
         {/* 右侧：用户系统 */}
         <div className="pointer-events-auto flex items-center gap-3">
-          {/* 语言切换 */}
           <button
+            type="button"
             onClick={() => useGameStore.getState().toggleLang()}
             className="font-pixel text-[11px] md:text-xs px-3 py-1.5 border border-white/10 text-gray-400 hover:text-neon-blue hover:border-neon-blue/50 transition-colors"
           >
@@ -197,15 +199,15 @@ export default function Universe3D() {
 
           {user ? (
             <>
-              {/* 发布按钮 */}
               <button
+                type="button"
                 onClick={() => navigate('/upload')}
                 className="font-pixel text-[11px] md:text-xs px-3 py-1.5 bg-neon-green/10 border border-neon-green/40 text-neon-green hover:bg-neon-green/20 transition-colors"
               >
                 + {isZh ? '发布游戏' : 'PUBLISH'}
               </button>
-              {/* 用户头像 */}
               <button
+                type="button"
                 onClick={() => navigate('/profile')}
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
@@ -213,6 +215,7 @@ export default function Universe3D() {
                 <span className="font-pixel text-xs neon-text-blue hidden md:inline">{user.nickname || user.username}</span>
               </button>
               <button
+                type="button"
                 onClick={() => { useGameStore.getState().logout(); navigate('/') }}
                 className="font-pixel text-[10px] md:text-xs text-gray-500 hover:text-neon-pink transition-colors"
               >
@@ -222,12 +225,14 @@ export default function Universe3D() {
           ) : (
             <>
               <button
+                type="button"
                 onClick={() => navigate('/login')}
                 className="font-pixel text-[11px] md:text-xs text-gray-400 hover:text-neon-blue transition-colors"
               >
                 {isZh ? '登录' : 'LOGIN'}
               </button>
               <button
+                type="button"
                 onClick={() => navigate('/register')}
                 className="font-pixel text-[11px] md:text-xs px-3 py-1.5 bg-neon-blue/10 border border-neon-blue/40 text-neon-blue hover:bg-neon-blue/20 transition-colors"
               >
@@ -249,12 +254,12 @@ export default function Universe3D() {
               onClick={() => {
                 const galaxy = engineRef.current?.galaxies.find(gx => gx.id === g.id)
                 if (galaxy && rendererRef.current) {
-                  rendererRef.current.flyTo(galaxy.center)
+                  rendererRef.current.flyTo(galaxy.star.position)
                 }
               }}
             >
-              {/* 方形开关 */}
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation()
                   const next = !visible
@@ -287,6 +292,7 @@ export default function Universe3D() {
       {/* 右下角操作 */}
       <div className="fixed bottom-4 right-4 z-10 flex gap-2">
         <button
+          type="button"
           onClick={() => rendererRef.current?.resetCamera()}
           className="font-pixel text-[11px] md:text-xs px-4 py-2.5 bg-black/50 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition-colors backdrop-blur-sm"
         >
@@ -294,23 +300,32 @@ export default function Universe3D() {
         </button>
       </div>
 
-      {/* 行星信息卡 */}
-      {selectedPlanet && (
-        <PlanetInfoCard
-          planet={selectedPlanet}
+      {/* 卫星信息卡（游戏） */}
+      {selectedSatellite && (
+        <SatelliteInfoCard
+          satellite={selectedSatellite}
           highScore={highScore}
           isZh={isZh}
           onEnterGame={handleEnterGame}
+          onClose={() => setSelectedSatellite(null)}
+        />
+      )}
+
+      {/* 行星信息卡（发布者） */}
+      {selectedPlanet && (
+        <PlanetInfoCard
+          planet={selectedPlanet}
+          isZh={isZh}
+          onViewProfile={handleViewProfile}
           onClose={() => setSelectedPlanet(null)}
         />
       )}
 
-      {/* 恒星信息卡 */}
+      {/* 恒星信息卡（星系中心） */}
       {selectedStar && (
         <StarInfoCard
           star={selectedStar}
           isZh={isZh}
-          onViewProfile={handleViewProfile}
           onClose={() => setSelectedStar(null)}
         />
       )}
@@ -335,21 +350,24 @@ export default function Universe3D() {
   )
 }
 
-// ==================== 行星信息卡 ====================
+// ==================== 卫星信息卡（游戏） ====================
 
-function PlanetInfoCard({
-  planet, highScore, isZh, onEnterGame, onClose,
+function SatelliteInfoCard({
+  satellite, highScore, isZh, onEnterGame, onClose,
 }: {
-  planet: PlanetData
+  satellite: SatelliteData
   highScore: number
   isZh: boolean
   onEnterGame: () => void
   onClose: () => void
 }) {
+  const planet = useGameStore.getState().games.find(g => g.id === satellite.gameId)
+  const creatorName = planet?.authorName || 'NEON ARCADE'
+  const creatorAvatar = planet?.authorAvatar || 'preset:1'
+
   return (
     <div className="fixed left-4 bottom-16 z-20 w-80 md:w-96 animate-slide-up">
       <div className="cyber-card cyber-card-hover p-5 relative">
-        {/* 关闭按钮 */}
         <button
           type="button"
           onClick={onClose}
@@ -360,17 +378,16 @@ function PlanetInfoCard({
 
         {/* 标题行 */}
         <div className="flex items-center gap-4 mb-5">
-          {/* 星球图标 */}
           <div
             className="w-14 h-14 rounded-full flex-shrink-0 overflow-hidden border-2 border-white/10"
             style={{
-              boxShadow: `0 0 24px ${planet.color}44, inset 0 0 12px ${planet.color}22`,
+              boxShadow: `0 0 24px ${satellite.color}44, inset 0 0 12px ${satellite.color}22`,
             }}
           >
-            {planet.image ? (
+            {satellite.image ? (
               <img
-                src={planet.image}
-                alt={planet.name}
+                src={satellite.image}
+                alt={satellite.name}
                 className="w-full h-full object-cover"
                 style={{ borderRadius: '50%' }}
               />
@@ -378,29 +395,29 @@ function PlanetInfoCard({
               <div
                 className="w-full h-full"
                 style={{
-                  background: `radial-gradient(circle at 35% 35%, ${planet.color}dd, ${planet.color}88, ${planet.color}44)`,
+                  background: `radial-gradient(circle at 35% 35%, ${satellite.color}dd, ${satellite.color}88, ${satellite.color}44)`,
                 }}
               />
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="font-pixel text-base md:text-lg text-white truncate">{planet.name}</h3>
+            <h3 className="font-pixel text-base md:text-lg text-white truncate">{satellite.name}</h3>
             <p className="text-xs text-text-muted mt-1.5 flex items-center gap-2">
               <span className="w-5 h-5 rounded-full overflow-hidden border border-white/10">
-                <Avatar avatar={planet.creatorAvatar} size={20} className="rounded-full" />
+                <Avatar avatar={creatorAvatar} size={20} className="rounded-full" />
               </span>
-              {planet.creatorName}
+              {creatorName}
             </p>
           </div>
         </div>
 
         {/* 描述 */}
-        <p className="text-sm text-text-secondary mb-5 line-clamp-2 leading-relaxed">{planet.description}</p>
+        <p className="text-sm text-text-secondary mb-5 line-clamp-2 leading-relaxed">{satellite.description}</p>
 
         {/* 数据 */}
         <div className="grid grid-cols-3 gap-3 mb-5">
           <div className="text-center p-2 bg-black/20 rounded border border-cyber-border/30">
-            <p className="font-mono text-base md:text-lg text-white font-semibold">{planet.playCount}</p>
+            <p className="font-mono text-base md:text-lg text-white font-semibold">{satellite.playCount}</p>
             <p className="text-[9px] text-text-muted font-pixel mt-1">{isZh ? '游玩' : 'PLAYS'}</p>
           </div>
           <div className="text-center p-2 bg-black/20 rounded border border-cyber-border/30">
@@ -410,8 +427,8 @@ function PlanetInfoCard({
             <p className="text-[9px] text-text-muted font-pixel mt-1">{isZh ? '最高分' : 'HIGH'}</p>
           </div>
           <div className="text-center p-2 bg-black/20 rounded border border-cyber-border/30">
-            <p className={`font-mono text-base md:text-lg font-semibold ${planet.rating > 0 ? 'text-text-secondary' : 'text-text-muted'}`}>
-              {planet.rating > 0 ? planet.rating.toFixed(1) : '---'}
+            <p className={`font-mono text-base md:text-lg font-semibold ${satellite.rating > 0 ? 'text-text-secondary' : 'text-text-muted'}`}>
+              {satellite.rating > 0 ? satellite.rating.toFixed(1) : '---'}
             </p>
             <p className="text-[9px] text-text-muted font-pixel mt-1">{isZh ? '评分' : 'RATE'}</p>
           </div>
@@ -426,21 +443,20 @@ function PlanetInfoCard({
           {isZh ? '进入游戏 →' : 'ENTER GAME →'}
         </button>
 
-        {/* 提示 */}
         <p className="text-center text-[9px] text-text-hint mt-3 font-pixel">
-          {isZh ? '双击行星可直接进入' : 'Double-click planet to enter directly'}
+          {isZh ? '双击卫星可直接进入' : 'Double-click satellite to enter directly'}
         </p>
       </div>
     </div>
   )
 }
 
-// ==================== 恒星信息卡 ====================
+// ==================== 行星信息卡（发布者） ====================
 
-function StarInfoCard({
-  star, isZh, onViewProfile, onClose,
+function PlanetInfoCard({
+  planet, isZh, onViewProfile, onClose,
 }: {
-  star: StarSystemData
+  planet: PlanetData
   isZh: boolean
   onViewProfile: () => void
   onClose: () => void
@@ -457,13 +473,19 @@ function StarInfoCard({
         </button>
 
         <div className="flex items-center gap-4 mb-5">
-          <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border-2 border-yellow-400/30 shadow-[0_0_24px_rgba(251,191,36,0.25)]">
-            <Avatar avatar={star.ownerAvatar} size={64} className="rounded-full" />
+          <div
+            className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border-2"
+            style={{
+              borderColor: planet.planetColor + '60',
+              boxShadow: `0 0 24px ${planet.planetColor}40`,
+            }}
+          >
+            <Avatar avatar={planet.ownerAvatar} size={64} className="rounded-full" />
           </div>
           <div>
-            <h3 className="font-pixel text-base md:text-lg text-white">{star.ownerName}</h3>
+            <h3 className="font-pixel text-base md:text-lg text-white">{planet.ownerName}</h3>
             <p className="text-xs text-text-muted mt-1.5 flex items-center gap-2">
-              ⭐ {isZh ? '创作者' : 'Creator'}
+              🪐 {isZh ? '创作者' : 'Creator'}
             </p>
           </div>
         </div>
@@ -471,16 +493,16 @@ function StarInfoCard({
         {/* 发布的游戏列表 */}
         <div className="mb-5 border-t border-cyber-border/30 pt-4">
           <p className="text-xs text-text-muted mb-3 font-pixel">
-            {isZh ? `已发布 ${star.planets.length} 个游戏` : `${star.planets.length} games published`}
+            {isZh ? `已发布 ${planet.satellites.length} 个游戏` : `${planet.satellites.length} games published`}
           </p>
           <div className="flex flex-wrap gap-2">
-            {star.planets.map(p => (
+            {planet.satellites.map(s => (
               <span
-                key={p.id}
+                key={s.id}
                 className="game-tag game-tag-sm text-text-secondary"
-                style={{ borderLeftColor: p.color, borderLeftWidth: 3 }}
+                style={{ borderLeftColor: s.color, borderLeftWidth: 3 }}
               >
-                {p.name}
+                {s.name}
               </span>
             ))}
           </div>
@@ -493,6 +515,69 @@ function StarInfoCard({
         >
           {isZh ? '查看资料' : 'VIEW PROFILE'}
         </button>
+      </div>
+    </div>
+  )
+}
+
+// ==================== 恒星信息卡（星系中心） ====================
+
+function StarInfoCard({
+  star, isZh, onClose,
+}: {
+  star: StarData
+  isZh: boolean
+  onClose: () => void
+}) {
+  return (
+    <div className="fixed left-4 bottom-16 z-20 w-80 md:w-96 animate-slide-up">
+      <div className="cyber-card cyber-card-hover p-5 relative">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-text-muted hover:text-white hover:bg-white/10 rounded transition-colors"
+        >
+          ✕
+        </button>
+
+        <div className="flex items-center gap-4 mb-5">
+          <div
+            className="w-16 h-16 rounded-full flex-shrink-0 border-2 flex items-center justify-center text-2xl"
+            style={{
+              borderColor: star.color + '60',
+              boxShadow: `0 0 30px ${star.color}60`,
+              background: `radial-gradient(circle, ${star.color}40, transparent)`,
+            }}
+          >
+            {star.icon}
+          </div>
+          <div>
+            <h3 className="font-pixel text-base md:text-lg text-white">
+              {isZh ? star.nameZh : star.nameEn}
+            </h3>
+            <p className="text-xs text-text-muted mt-1.5 flex items-center gap-2">
+              ⭐ {isZh ? '星系中心' : 'Galaxy Center'}
+            </p>
+          </div>
+        </div>
+
+        {/* 星系内的创作者 */}
+        <div className="mb-5 border-t border-cyber-border/30 pt-4">
+          <p className="text-xs text-text-muted mb-3 font-pixel">
+            {isZh ? `${star.planets.length} 位创作者` : `${star.planets.length} creators`}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {star.planets.map(p => (
+              <span
+                key={p.id}
+                className="flex items-center gap-1.5 px-2 py-1 bg-black/30 border border-cyber-border/30 rounded text-xs"
+              >
+                <Avatar avatar={p.ownerAvatar} size={16} className="rounded-full" />
+                {p.ownerName}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )
