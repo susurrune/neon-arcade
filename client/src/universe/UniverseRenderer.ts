@@ -408,16 +408,16 @@ export class UniverseRenderer {
   }
 
   private createStarMesh(star: StarData) {
-    // 恒星主体 — 大型发光球体
-    const radius = star.radius
-    const geo = new THREE.SphereGeometry(radius, 32, 32)
+    // 恒星主体 — 小型发光球体（星系中心标记）
+    const radius = 2.5  // 固定较小尺寸
+    const geo = new THREE.SphereGeometry(radius, 24, 24)
     const color = new THREE.Color(star.color)
 
     const mat = new THREE.MeshStandardMaterial({
       color: color,
       emissive: color,
-      emissiveIntensity: 1.0,
-      roughness: 0.2,
+      emissiveIntensity: 0.8,
+      roughness: 0.3,
       metalness: 0.1,
     })
 
@@ -426,17 +426,6 @@ export class UniverseRenderer {
     this.starMeshGroup.add(mesh)
     this.starMeshes.set(star.id, mesh)
     this.addToGalaxyGroup(star.galaxyId, mesh)
-
-    // 光晕效果
-    const glowMat = new THREE.SpriteMaterial({
-      color: color,
-      transparent: true,
-      opacity: 0.3,
-      blending: THREE.AdditiveBlending,
-    })
-    const glow = new THREE.Sprite(glowMat)
-    glow.scale.set(radius * 4, radius * 4, 1)
-    mesh.add(glow)
   }
 
   // ---- 行星（发布者） ----
