@@ -409,15 +409,18 @@ export class UniverseRenderer {
 
   private createStarMesh(star: StarData) {
     // 恒星主体 — 小型发光球体（星系中心标记）
-    const radius = 2.5  // 固定较小尺寸
-    const geo = new THREE.SphereGeometry(radius, 24, 24)
+    const radius = 3.5
+    const geo = new THREE.SphereGeometry(radius, 32, 32)
     const color = new THREE.Color(star.color)
 
+    // 生成星系图标纹理
+    const iconTexture = this.generateGalaxyIconTexture(star.galaxyId, star.color)
+
     const mat = new THREE.MeshStandardMaterial({
-      color: color,
+      map: iconTexture,
       emissive: color,
-      emissiveIntensity: 0.8,
-      roughness: 0.3,
+      emissiveIntensity: 0.3,
+      roughness: 0.4,
       metalness: 0.1,
     })
 
@@ -426,6 +429,162 @@ export class UniverseRenderer {
     this.starMeshGroup.add(mesh)
     this.starMeshes.set(star.id, mesh)
     this.addToGalaxyGroup(star.galaxyId, mesh)
+  }
+
+  // 生成星系图标纹理
+  private generateGalaxyIconTexture(galaxyId: string, color: string): THREE.Texture {
+    const canvas = document.createElement('canvas')
+    canvas.width = 128
+    canvas.height = 128
+    const ctx = canvas.getContext('2d')!
+
+    const c = new THREE.Color(color)
+
+    // 基础渐变背景
+    const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64)
+    gradient.addColorStop(0, color)
+    gradient.addColorStop(0.5, `rgba(${Math.floor(c.r * 180)}, ${Math.floor(c.g * 180)}, ${Math.floor(c.b * 180)}, 1)`)
+    gradient.addColorStop(1, `rgba(${Math.floor(c.r * 100)}, ${Math.floor(c.g * 100)}, ${Math.floor(c.b * 100)}, 1)`)
+    ctx.fillStyle = gradient
+    ctx.fillRect(0, 0, 128, 128)
+
+    // 根据星系类型绘制图标
+    ctx.fillStyle = '#ffffff'
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 3
+
+    const cx = 64, cy = 64
+
+    switch (galaxyId) {
+      case 'puzzle': // 益智 - 拼图块
+        ctx.beginPath()
+        ctx.moveTo(40, 40)
+        ctx.lineTo(40, 64)
+        ctx.lineTo(64, 64)
+        ctx.lineTo(64, 40)
+        ctx.lineTo(88, 40)
+        ctx.lineTo(88, 88)
+        ctx.lineTo(40, 88)
+        ctx.closePath()
+        ctx.stroke()
+        // 拼图凸起
+        ctx.beginPath()
+        ctx.arc(52, 64, 8, 0, Math.PI * 2)
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.arc(64, 52, 8, 0, Math.PI * 2)
+        ctx.stroke()
+        break
+
+      case 'shooter': // 射击 - 准星
+        ctx.beginPath()
+        ctx.arc(cx, cy, 25, 0, Math.PI * 2)
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.moveTo(cx, cy - 35)
+        ctx.lineTo(cx, cy - 15)
+        ctx.moveTo(cx, cy + 15)
+        ctx.lineTo(cx, cy + 35)
+        ctx.moveTo(cx - 35, cy)
+        ctx.lineTo(cx - 15, cy)
+        ctx.moveTo(cx + 15, cy)
+        ctx.lineTo(cx + 35, cy)
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.arc(cx, cy, 8, 0, Math.PI * 2)
+        ctx.fill()
+        break
+
+      case 'adventure': // 冒险 - 宝剑
+        ctx.beginPath()
+        ctx.moveTo(cx, 25)
+        ctx.lineTo(cx - 8, 45)
+        ctx.lineTo(cx - 12, 45)
+        ctx.lineTo(cx - 12, 50)
+        ctx.lineTo(cx - 20, 50)
+        ctx.lineTo(cx - 12, 58)
+        ctx.lineTo(cx - 12, 95)
+        ctx.lineTo(cx + 12, 95)
+        ctx.lineTo(cx + 12, 58)
+        ctx.lineTo(cx + 20, 50)
+        ctx.lineTo(cx + 12, 50)
+        ctx.lineTo(cx + 12, 45)
+        ctx.lineTo(cx + 8, 45)
+        ctx.closePath()
+        ctx.fill()
+        break
+
+      case 'racing': // 竞速 - 赛车轮廓
+        ctx.beginPath()
+        ctx.moveTo(30, 60)
+        ctx.lineTo(50, 50)
+        ctx.lineTo(80, 50)
+        ctx.lineTo(100, 60)
+        ctx.lineTo(100, 75)
+        ctx.lineTo(30, 75)
+        ctx.closePath()
+        ctx.fill()
+        // 轮子
+        ctx.beginPath()
+        ctx.arc(42, 80, 12, 0, Math.PI * 2)
+        ctx.arc(88, 80, 12, 0, Math.PI * 2)
+        ctx.stroke()
+        break
+
+      case 'strategy': // 策略 - 棋盘格
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++) {
+            if ((i + j) % 2 === 0) {
+              ctx.fillRect(38 + i * 18, 38 + j * 18, 16, 16)
+            }
+          }
+        }
+        ctx.strokeRect(38, 38, 52, 52)
+        break
+
+      case 'rpg': // RPG - 魔法棒
+        ctx.beginPath()
+        ctx.moveTo(cx, 30)
+        ctx.lineTo(cx - 20, 70)
+        ctx.lineTo(cx, 95)
+        ctx.lineTo(cx + 20, 70)
+        ctx.closePath()
+        ctx.fill()
+        // 星星
+        ctx.beginPath()
+        ctx.arc(cx, 30, 8, 0, Math.PI * 2)
+        ctx.fill()
+        break
+
+      case 'simulation': // 模拟 - 建筑轮廓
+        ctx.beginPath()
+        ctx.moveTo(45, 90)
+        ctx.lineTo(45, 55)
+        ctx.lineTo(55, 55)
+        ctx.lineTo(55, 40)
+        ctx.lineTo(75, 40)
+        ctx.lineTo(75, 55)
+        ctx.lineTo(85, 55)
+        ctx.lineTo(85, 90)
+        ctx.closePath()
+        ctx.fill()
+        // 窗户
+        ctx.fillStyle = color
+        ctx.fillRect(50, 60, 10, 10)
+        ctx.fillRect(60, 45, 10, 10)
+        ctx.fillRect(70, 60, 10, 10)
+        break
+
+      default:
+        // 默认圆形
+        ctx.beginPath()
+        ctx.arc(cx, cy, 20, 0, Math.PI * 2)
+        ctx.fill()
+    }
+
+    const tex = new THREE.CanvasTexture(canvas)
+    tex.colorSpace = THREE.SRGBColorSpace
+    return tex
   }
 
   // ---- 行星（发布者） ----
