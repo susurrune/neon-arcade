@@ -4,6 +4,10 @@ import { TetrisGame } from '../games/TetrisGame'
 import { PlatformerGame } from '../games/PlatformerGame'
 import { ShooterGame } from '../games/ShooterGame'
 import { AsteroidsGame } from '../games/AsteroidsGame'
+import { RacingGame } from '../games/RacingGame'
+import { TowerDefenseGame } from '../games/TowerDefenseGame'
+import { WarriorGame } from '../games/WarriorGame'
+import { FarmGame } from '../games/FarmGame'
 import { setActiveCanvas } from '../utils/virtualInput'
 
 interface GameImpl {
@@ -30,8 +34,8 @@ function createTetris(): GameImpl & GameInit {
   const g = new TetrisGame()
   return {
     init: (canvas, onScore) => g.init(canvas, onScore),
-    start: () => {},
-    stop: () => g.destroy(),
+    start: () => g.start(),
+    stop: () => g.stop(),
     destroy: () => g.destroy(),
   }
 }
@@ -42,7 +46,7 @@ function createPlatformer(): GameImpl & GameInit {
     init: (canvas, onScore) => { g = new PlatformerGame(canvas, onScore); g.start() },
     start: () => g?.start(),
     stop: () => g?.stop(),
-    destroy: () => g?.stop(),
+    destroy: () => g?.destroy(),
   }
 }
 
@@ -66,12 +70,56 @@ function createAsteroids(): GameImpl & GameInit {
   }
 }
 
+function createRacing(): GameImpl & GameInit {
+  let g: RacingGame | null = null
+  return {
+    init: (canvas, onScore) => { g = new RacingGame(canvas, onScore); g.start() },
+    start: () => g?.start(),
+    stop: () => g?.stop(),
+    destroy: () => g?.destroy(),
+  }
+}
+
+function createTowerDefense(): GameImpl & GameInit {
+  let g: TowerDefenseGame | null = null
+  return {
+    init: (canvas, onScore) => { g = new TowerDefenseGame(canvas, onScore); g.start() },
+    start: () => g?.start(),
+    stop: () => g?.stop(),
+    destroy: () => g?.destroy(),
+  }
+}
+
+function createWarrior(): GameImpl & GameInit {
+  let g: WarriorGame | null = null
+  return {
+    init: (canvas, onScore) => { g = new WarriorGame(canvas, onScore); g.start() },
+    start: () => g?.start(),
+    stop: () => g?.stop(),
+    destroy: () => g?.destroy(),
+  }
+}
+
+function createFarm(): GameImpl & GameInit {
+  let g: FarmGame | null = null
+  return {
+    init: (canvas, onScore) => { g = new FarmGame(canvas, onScore); g.start() },
+    start: () => g?.start(),
+    stop: () => g?.stop(),
+    destroy: () => g?.destroy(),
+  }
+}
+
 const GAME_MAP: Record<string, () => GameImpl & GameInit> = {
   snake: createSnake,
   tetris: createTetris,
   platformer: createPlatformer,
   shooter: createShooter,
   asteroids: createAsteroids,
+  racing: createRacing,
+  towerdefense: createTowerDefense,
+  warrior: createWarrior,
+  farm: createFarm,
 }
 
 interface Props {

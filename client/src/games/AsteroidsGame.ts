@@ -1,5 +1,5 @@
 // ============================================
-// NEON ASTEROIDS — 霓虹陨石带
+// NEON ASTEROIDS v2 — 霓虹陨石带 + 道具系统 + 特殊陨石 + 武器升级
 // 360° 旋转控制 + 惯性物理 + 陨石碎裂 + 超空间瞬移
 // ============================================
 
@@ -21,9 +21,10 @@ interface Asteroid {
   rotSpeed: number
   shape: number[]       // pre-baked jagged radius offsets
   color: string
+  type?: 'normal' | 'golden' | 'explosive' | 'crystal'
 }
 
-interface Bullet { pos: Vec; vel: Vec; life: number }
+interface Bullet { pos: Vec; vel: Vec; life: number; size?: number; color?: string; damage?: number }
 
 interface Particle {
   pos: Vec
@@ -35,6 +36,15 @@ interface Particle {
 }
 
 interface FloatText { x: number; y: number; text: string; life: number; color: string }
+
+// 道具类型
+interface PowerUp {
+  pos: Vec
+  vel: Vec
+  type: 'shield' | 'bomb' | 'slowmo' | 'spread' | 'rapid' | 'life'
+  life: number
+  pulse: number
+}
 
 const MAX_SPEED        = 5.5
 const FRICTION         = 0.992
@@ -79,6 +89,18 @@ export class AsteroidsGame {
   private bestCombo = 0
   private comboCount = 0
   private comboTimer = 0
+
+  // Power-up system
+  private powerUps: PowerUp[] = []
+  private activeShield = 0
+  private activeSlowMo = 0
+  private activeSpread = 0
+  private activeRapid = 0
+  private weaponLevel = 1
+
+  // Screen flash
+  private flashColor = ''
+  private flashAlpha = 0
 
   private keys = new Set<string>()
   private touchPos: Vec | null = null
@@ -165,6 +187,7 @@ export class AsteroidsGame {
     this.bullets = []
     this.particles = []
     this.floats = []
+    this.powerUps = []
     this.wave = 1
     this.score = 0
     this.lives = 3
@@ -172,6 +195,13 @@ export class AsteroidsGame {
     this.comboCount = 0
     this.comboTimer = 0
     this.bestCombo = 0
+    this.activeShield = 0
+    this.activeSlowMo = 0
+    this.activeSpread = 0
+    this.activeRapid = 0
+    this.weaponLevel = 1
+    this.flashColor = ''
+    this.flashAlpha = 0
     this.spawnWave()
     this.onScoreUpdate(0)
   }
@@ -208,7 +238,26 @@ export class AsteroidsGame {
     for (let i = 0; i < vertCount; i++) {
       shape.push(0.75 + Math.random() * 0.5)  // jagged radius factor
     }
-    const colors = ['#FF2E88', '#7C3AED', '#FF6B35']
+
+    // 特殊陨石类型
+    let type: 'normal' | 'golden' | 'explosive' | 'crystal' = 'normal'
+    let color = '#FF2E88'
+    const rand = Math.random()
+
+    if (this.wave >= 2 && rand < 0.1) {
+      type = 'golden'
+      color = '#ffd700' // 金色陨石 - 双倍分数
+    } else if (this.wave >= 3 && rand < 0.2) {
+      type = 'explosive'
+      color = '#ff4444' // 爆炸陨石 - 碎裂时爆炸
+    } else if (this.wave >= 4 && rand < 0.25) {
+      type = 'crystal'
+      color = '#00f0ff' // 水晶陨石 - 可能掉落道具
+    } else {
+      const colors = ['#FF2E88', '#7C3AED', '#FF6B35']
+      color = colors[Math.floor(Math.random() * colors.length)]
+    }
+
     return {
       pos,
       vel: { x: Math.cos(dir) * speed, y: Math.sin(dir) * speed },
@@ -216,8 +265,22 @@ export class AsteroidsGame {
       rot: Math.random() * Math.PI * 2,
       rotSpeed: (Math.random() - 0.5) * 0.04,
       shape,
-      color: colors[Math.floor(Math.random() * colors.length)],
+      color,
+      type,
     }
+  }
+
+  private spawnPowerUp(pos: Vec) {
+    const types: PowerUp['type'][] = ['shield', 'bomb', 'slowmo', 'spread', 'rapid', 'life']
+    const type = types[Math.floor(Math.random() * types.length)]
+
+    this.powerUps.push({
+      pos: { ...pos },
+      vel: { x: (Math.random() - 0.5) * 0.5, y: 0.5 + Math.random() * 0.5 },
+      type,
+      life: 600, // 10秒后消失
+      pulse: 0,
+    })
   }
 
   private initStarfield() {
@@ -242,7 +305,7 @@ export class AsteroidsGame {
     this.keys.add(k)
 
     if (this.state !== 'playing') {
-      if (k === 'r' || k === 'enter') {
+      if (k === 'r') {
         this.resetGame()
         this.state = 'playing'
       }
@@ -303,6 +366,39 @@ export class AsteroidsGame {
       p.vel.y *= 0.97
     }
     if (this.screenShake > 0) this.screenShake *= 0.85
+    if (this.flashAlpha > 0) this.flashAlpha *= 0.9
+
+    // Update power-ups
+    for (let i = this.powerUps.length - 1; i >= 0; i--) {
+      const pu = this.powerUps[i]
+      pu.pos.x += pu.vel.x
+      pu.pos.y += pu.vel.y
+      pu.life--
+      pu.pulse += 0.1
+
+      // Wrap
+      pu.pos.x = this.wrap(pu.pos.x, this.W)
+      pu.pos.y = this.wrap(pu.pos.y, this.H)
+
+      // Check pickup
+      const dist = Math.hypot(pu.pos.x - this.ship.pos.x, pu.pos.y - this.ship.pos.y)
+      if (dist < 20) {
+        this.activatePowerUp(pu.type)
+        this.spawnParticles(pu.pos.x, pu.pos.y, 15, this.getPowerUpColor(pu.type))
+        this.powerUps.splice(i, 1)
+        continue
+      }
+
+      if (pu.life <= 0) {
+        this.powerUps.splice(i, 1)
+      }
+    }
+
+    // Update power-up timers
+    if (this.activeShield > 0) this.activeShield--
+    if (this.activeSlowMo > 0) this.activeSlowMo--
+    if (this.activeSpread > 0) this.activeSpread--
+    if (this.activeRapid > 0) this.activeRapid--
 
     if (this.state !== 'playing') return
 
@@ -342,15 +438,53 @@ export class AsteroidsGame {
     if (this.hyperspaceCool > 0) this.hyperspaceCool--
 
     // === Fire ===
+    const fireDelayTime = this.activeRapid > 0 ? FIRE_DELAY / 2 : FIRE_DELAY
     if (this.fireDelay > 0) this.fireDelay--
     if ((this.keys.has(' ') || this.keys.has('space')) && this.fireDelay <= 0) {
+      // 基础子弹
+      const bulletSpeed = BULLET_SPEED + this.weaponLevel * 0.5
+      const bulletSize = 2.5 + this.weaponLevel * 0.2
+      const bulletDamage = 1 + Math.floor(this.weaponLevel / 3)
+
       this.bullets.push({
         pos: { x: this.ship.pos.x + Math.cos(this.ship.rot) * 14, y: this.ship.pos.y + Math.sin(this.ship.rot) * 14 },
-        vel: { x: Math.cos(this.ship.rot) * BULLET_SPEED + this.ship.vel.x * 0.3,
-               y: Math.sin(this.ship.rot) * BULLET_SPEED + this.ship.vel.y * 0.3 },
+        vel: { x: Math.cos(this.ship.rot) * bulletSpeed + this.ship.vel.x * 0.3,
+               y: Math.sin(this.ship.rot) * bulletSpeed + this.ship.vel.y * 0.3 },
         life: BULLET_LIFE,
+        size: bulletSize,
+        color: this.getWeaponColor(),
+        damage: bulletDamage,
       })
-      this.fireDelay = FIRE_DELAY
+
+      // 扩散射击
+      if (this.activeSpread > 0 || this.weaponLevel >= 3) {
+        const spreadCount = this.activeSpread > 0 ? 2 : Math.min(Math.floor(this.weaponLevel / 3), 3)
+        for (let i = 1; i <= spreadCount; i++) {
+          const angle = this.ship.rot + i * 0.15
+          this.bullets.push({
+            pos: { x: this.ship.pos.x + Math.cos(angle) * 14, y: this.ship.pos.y + Math.sin(angle) * 14 },
+            vel: { x: Math.cos(angle) * bulletSpeed * 0.95,
+                   y: Math.sin(angle) * bulletSpeed * 0.95 },
+            life: BULLET_LIFE * 0.8,
+            size: bulletSize * 0.8,
+            color: this.getWeaponColor(),
+            damage: Math.max(1, bulletDamage - 1),
+          })
+
+          const angle2 = this.ship.rot - i * 0.15
+          this.bullets.push({
+            pos: { x: this.ship.pos.x + Math.cos(angle2) * 14, y: this.ship.pos.y + Math.sin(angle2) * 14 },
+            vel: { x: Math.cos(angle2) * bulletSpeed * 0.95,
+                   y: Math.sin(angle2) * bulletSpeed * 0.95 },
+            life: BULLET_LIFE * 0.8,
+            size: bulletSize * 0.8,
+            color: this.getWeaponColor(),
+            damage: Math.max(1, bulletDamage - 1),
+          })
+        }
+      }
+
+      this.fireDelay = fireDelayTime
     }
 
     // === Bullets ===
@@ -413,7 +547,36 @@ export class AsteroidsGame {
 
   private destroyAsteroid(idx: number, byPlayer: boolean) {
     const a = this.asteroids[idx]
-    const points = SIZE_POINTS[a.size]
+    let points = SIZE_POINTS[a.size]
+
+    // 特殊陨石效果
+    if (a.type === 'golden') {
+      points *= 2 // 双倍分数
+      this.floats.push({
+        x: a.pos.x, y: a.pos.y,
+        text: 'GOLDEN! x2',
+        life: 60, color: '#ffd700',
+      })
+    } else if (a.type === 'explosive' && byPlayer) {
+      // 爆炸陨石：范围伤害
+      this.screenShake = Math.max(this.screenShake, 12)
+      this.flashColor = '#ff4444'
+      this.flashAlpha = 0.3
+
+      // 摧毁附近小陨石
+      for (let i = this.asteroids.length - 1; i >= 0; i--) {
+        if (i === idx) continue
+        const other = this.asteroids[i]
+        const dist = Math.hypot(other.pos.x - a.pos.x, other.pos.y - a.pos.y)
+        if (dist < 80 && other.size === 1) {
+          this.destroyAsteroid(i, false)
+        }
+      }
+    } else if (a.type === 'crystal' && byPlayer && Math.random() < 0.4) {
+      // 水晶陨石：40%掉落道具
+      this.spawnPowerUp(a.pos)
+    }
+
     if (byPlayer) {
       this.comboCount++
       this.comboTimer = 120
@@ -428,8 +591,15 @@ export class AsteroidsGame {
         life: 50, color: mult > 1 ? '#ffe600' : '#22D3EE',
       })
     }
-    this.spawnParticles(a.pos.x, a.pos.y, a.size === 3 ? 18 : a.size === 2 ? 12 : 8, a.color)
-    this.screenShake = Math.max(this.screenShake, a.size * 1.5)
+
+    // 爆炸陨石死亡时也爆炸
+    if (a.type === 'explosive') {
+      this.spawnParticles(a.pos.x, a.pos.y, 25, '#ff4444')
+      this.screenShake = Math.max(this.screenShake, 10)
+    } else {
+      this.spawnParticles(a.pos.x, a.pos.y, a.size === 3 ? 18 : a.size === 2 ? 12 : 8, a.color)
+      this.screenShake = Math.max(this.screenShake, a.size * 1.5)
+    }
 
     // Split into two smaller pieces
     if (a.size > 1) {
@@ -449,11 +619,22 @@ export class AsteroidsGame {
   }
 
   private shipHit() {
+    // 护盾免疫
+    if (this.activeShield > 0) {
+      this.activeShield = 0
+      this.flashColor = '#00f0ff'
+      this.flashAlpha = 0.4
+      this.spawnParticles(this.ship.pos.x, this.ship.pos.y, 25, '#00f0ff')
+      this.floats.push({ x: this.ship.pos.x, y: this.ship.pos.y - 30, text: 'SHIELD!', life: 60, color: '#00f0ff' })
+      return
+    }
+
     this.lives--
     this.spawnParticles(this.ship.pos.x, this.ship.pos.y, 30, '#FF2E88')
     this.screenShake = 16
     this.comboCount = 0
     this.comboTimer = 0
+    this.weaponLevel = Math.max(1, this.weaponLevel - 1) // 死亡降低武器等级
     if (this.lives <= 0) {
       this.state = 'gameover'
     } else {
@@ -462,6 +643,62 @@ export class AsteroidsGame {
       this.ship.rot = -Math.PI / 2
       this.ship.invuln = INVULN_FRAMES
     }
+  }
+
+  private activatePowerUp(type: PowerUp['type']) {
+    switch (type) {
+      case 'shield':
+        this.activeShield = 600 // 10秒
+        this.floats.push({ x: this.ship.pos.x, y: this.ship.pos.y - 30, text: 'SHIELD!', life: 60, color: '#00f0ff' })
+        break
+      case 'bomb':
+        // 清屏炸弹
+        this.flashColor = '#ffffff'
+        this.flashAlpha = 0.6
+        this.screenShake = 20
+        for (const a of this.asteroids) {
+          this.score += SIZE_POINTS[a.size]
+          this.spawnParticles(a.pos.x, a.pos.y, 10, a.color)
+        }
+        this.asteroids = []
+        this.floats.push({ x: this.W / 2, y: this.H / 2, text: 'BOMB!', life: 90, color: '#ff4444' })
+        break
+      case 'slowmo':
+        this.activeSlowMo = 480 // 8秒
+        this.floats.push({ x: this.ship.pos.x, y: this.ship.pos.y - 30, text: 'SLOW-MO!', life: 60, color: '#39ff14' })
+        break
+      case 'spread':
+        this.activeSpread = 600 // 10秒
+        this.floats.push({ x: this.ship.pos.x, y: this.ship.pos.y - 30, text: 'SPREAD!', life: 60, color: '#ff6600' })
+        break
+      case 'rapid':
+        this.activeRapid = 600 // 10秒
+        this.floats.push({ x: this.ship.pos.x, y: this.ship.pos.y - 30, text: 'RAPID FIRE!', life: 60, color: '#ffe600' })
+        break
+      case 'life':
+        this.lives = Math.min(this.lives + 1, 5)
+        this.floats.push({ x: this.ship.pos.x, y: this.ship.pos.y - 30, text: '+1 LIFE!', life: 60, color: '#39ff14' })
+        break
+    }
+  }
+
+  private getPowerUpColor(type: PowerUp['type']): string {
+    const colors = {
+      shield: '#00f0ff',
+      bomb: '#ff4444',
+      slowmo: '#39ff14',
+      spread: '#ff6600',
+      rapid: '#ffe600',
+      life: '#39ff14',
+    }
+    return colors[type]
+  }
+
+  private getWeaponColor(): string {
+    if (this.weaponLevel >= 5) return '#ffffff'
+    if (this.weaponLevel >= 3) return '#ffe600'
+    if (this.weaponLevel >= 2) return '#39ff14'
+    return '#22D3EE'
   }
 
   private spawnParticles(x: number, y: number, count: number, color: string) {
@@ -755,7 +992,7 @@ export class AsteroidsGame {
       ctx.fillStyle = '#ffe600'
       ctx.shadowColor = '#ffe600'
       ctx.shadowBlur = 10
-      ctx.fillText('► 点击或按 ENTER 开始', w / 2, h / 2 + 80)
+      ctx.fillText('► 点击或按 R 开始', w / 2, h / 2 + 80)
       ctx.shadowBlur = 0
     }
     ctx.textBaseline = 'alphabetic'

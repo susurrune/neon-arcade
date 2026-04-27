@@ -1,5 +1,5 @@
 // ============================================
-// TETRIS GAME v4 — Hold功能 + T-Spin检测 + 消除特效
+// TETRIS GAME v5 — 连击奖励 + 特殊方块 + 挑战模式
 // ============================================
 import { playSound, playCombo, playClear } from '../utils/sound'
 
@@ -15,6 +15,9 @@ const SHAPES: number[][][] = [
 const COLORS = ['#00f0ff','#ffe600','#b026ff','#ff2d95','#39ff14','#00f0ff','#ff2d95']
 const PIECE_NAMES = ['I','O','T','L','J','S','Z']
 
+// 特殊方块类型
+type SpecialBlock = 'none' | 'bomb' | 'rainbow' | 'freeze'
+
 export class TetrisGame {
   private canvas!: HTMLCanvasElement
   private ctx!: CanvasRenderingContext2D
@@ -28,7 +31,7 @@ export class TetrisGame {
   private rows = 20
   private cellSize = 24
   private board: (number | null)[][] = []
-  private piece: { shape: number[][]; color: string; x: number; y: number; type: number } | null = null
+  private piece: { shape: number[][]; color: string; x: number; y: number; type: number; special?: SpecialBlock } | null = null
 
   // Hold系统 - 新增
   private holdPiece: { shape: number[][]; color: string; type: number } | null = null
@@ -71,6 +74,22 @@ export class TetrisGame {
   // 消除行数统计（用于特效）
   private lastClearedLines = 0
 
+  // 连击奖励系统
+  private comboRewardActive = false
+  private comboRewardMultiplier = 1
+  private perfectClears = 0
+
+  // 挑战模式
+  private challengeMode = false
+  private challengeType: 'time' | 'obstacle' | 'zen' = 'zen'
+  private challengeTimer = 0
+  private challengeMaxTime = 180 // 3分钟限时
+  private obstacleBlocks: {x: number, y: number}[] = []
+
+  // 特殊方块
+  private activeSpecialBlock: SpecialBlock = 'none'
+  private rainbowPending = false // 彩虹万能块
+
   private keys: Set<string> = new Set()
 
   init(canvas: HTMLCanvasElement, onScore: (s: number) => void) {
@@ -95,6 +114,25 @@ export class TetrisGame {
     this.running = false
     cancelAnimationFrame(this.animId)
     window.removeEventListener('keydown', this.handleKey)
+  }
+
+  start() {
+    this.running = true
+    // 如果游戏处于暂停状态，恢复游戏循环
+    if (this.state === 'paused') {
+      this.state = 'playing'
+    }
+    // 确保游戏循环在运行
+    if (this.animId === 0) {
+      this.loop(performance.now())
+    }
+  }
+
+  stop() {
+    // 暂停游戏但不销毁状态
+    if (this.state === 'playing') {
+      this.state = 'paused'
+    }
   }
 
   private reset() {
@@ -288,6 +326,20 @@ export class TetrisGame {
       // Perfect Clear check
       const isPerfectClear = this.board.every(row => row.every(c => c === null))
       const perfectBonus = isPerfectClear ? 2000 : 0
+      this.perfectClears = isPerfectClear ? this.perfectClears + 1 : 0
+
+      // 连击奖励：连续消行触发额外倍率
+      if (this.combo >= 3) {
+        this.comboRewardActive = true
+        this.comboRewardMultiplier = Math.min(1 + this.combo * 0.2, 3)
+      }
+
+      // 彩虹万能块效果：可匹配任何颜色
+      let rainbowBonus = 0
+      if (this.rainbowPending) {
+        rainbowBonus = cleared * 50
+        this.rainbowPending = false
+      }
 
       // T-Spin加分
       let tspinBonus = 0
@@ -298,7 +350,7 @@ export class TetrisGame {
       }
 
       const basePts = [0, 100, 300, 500, 800][cleared] || 800
-      const pts = (basePts * this.level * comboMult) + perfectBonus + tspinBonus
+      const pts = Math.floor((basePts * this.level * comboMult * this.comboRewardMultiplier) + perfectBonus + tspinBonus + rainbowBonus)
       this.score += pts
       this.lines += cleared
       this.level = Math.floor(this.lines / 10) + 1
@@ -437,7 +489,6 @@ export class TetrisGame {
   private handleKey = (e: KeyboardEvent) => {
     if (this.state === 'title') { this.startGame(); return }
     if (this.state === 'gameover' && (e.key === 'r' || e.key === 'R')) { this.startGame(); return }
-    if (e.key === 'p') { this.state = this.state === 'paused' ? 'playing' : this.state === 'playing' ? 'paused' : this.state; return }
     if (this.state !== 'playing' || !this.piece) return
 
     const p = this.piece

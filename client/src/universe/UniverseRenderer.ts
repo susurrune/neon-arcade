@@ -154,41 +154,291 @@ export class UniverseRenderer {
     this.composer.addPass(new OutputPass())
   }
 
-  // ---- 背景星空 ----
+  // ---- 背景星空 ---- 增强艺术美感与神秘感
 
   private buildStarfield() {
-    const count = this.isMobile ? 1500 : 3000
+    // === 第一层：远景星尘（最远、最密集、最暗） ===
+    this.buildDistantStarfield()
+
+    // === 第二层：中景星星（多彩、闪烁） ===
+    this.buildMidStarfield()
+
+    // === 第三层：近景亮星（稀疏、明亮） ===
+    this.buildBrightStarfield()
+
+    // === 第四层：星云雾气（神秘感） ===
+    this.buildNebulaCloud()
+
+    // === 第五层：银河带 ===
+    this.buildMilkyWay()
+  }
+
+  // 远景星尘 — 极远、密集、微弱
+  private buildDistantStarfield() {
+    const count = this.isMobile ? 2000 : 4000
     const positions = new Float32Array(count * 3)
     const colors = new Float32Array(count * 3)
-    const sizes = new Float32Array(count)
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3
-      const r = 200 + Math.random() * 600
+      const r = 400 + Math.random() * 400
       const theta = Math.random() * Math.PI * 2
       const phi = Math.acos(2 * Math.random() - 1)
       positions[i3] = r * Math.sin(phi) * Math.cos(theta)
       positions[i3 + 1] = r * Math.sin(phi) * Math.sin(theta)
       positions[i3 + 2] = r * Math.cos(phi)
 
-      const brightness = 0.3 + Math.random() * 0.7
-      colors[i3] = brightness
-      colors[i3 + 1] = brightness
-      colors[i3 + 2] = brightness
-
-      sizes[i] = 0.5 + Math.random() * 1.5
+      // 极暗的星尘，偏冷色调
+      const brightness = 0.15 + Math.random() * 0.25
+      const tint = Math.random()
+      if (tint < 0.3) {
+        // 蓝色调
+        colors[i3] = brightness * 0.7
+        colors[i3 + 1] = brightness * 0.85
+        colors[i3 + 2] = brightness
+      } else if (tint < 0.6) {
+        // 紫色调
+        colors[i3] = brightness * 0.85
+        colors[i3 + 1] = brightness * 0.65
+        colors[i3 + 2] = brightness
+      } else {
+        // 纯白
+        colors[i3] = brightness
+        colors[i3 + 1] = brightness
+        colors[i3 + 2] = brightness
+      }
     }
 
     const geo = new THREE.BufferGeometry()
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3))
-    geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1))
 
     const mat = new THREE.PointsMaterial({
-      size: 0.8,
+      size: 0.4,
       vertexColors: true,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.6,
+      sizeAttenuation: true,
+    })
+
+    this.starfieldGroup.add(new THREE.Points(geo, mat))
+  }
+
+  // 中景星星 — 多彩、中等密度
+  private buildMidStarfield() {
+    const count = this.isMobile ? 800 : 1500
+    const positions = new Float32Array(count * 3)
+    const colors = new Float32Array(count * 3)
+    const sizes = new Float32Array(count)
+
+    // 星星颜色谱（神秘冷色调）
+    const starColors = [
+      [0.6, 0.75, 1.0],   // 冷蓝
+      [0.75, 0.55, 1.0],  // 紫蓝
+      [0.9, 0.7, 0.6],    // 暖橙（少数）
+      [0.55, 0.85, 0.8],  // 青蓝
+      [1.0, 0.85, 0.9],   // 淡粉
+      [0.7, 0.7, 0.9],    // 淡蓝白
+    ]
+
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3
+      const r = 200 + Math.random() * 300
+      const theta = Math.random() * Math.PI * 2
+      const phi = Math.acos(2 * Math.random() - 1)
+      positions[i3] = r * Math.sin(phi) * Math.cos(theta)
+      positions[i3 + 1] = r * Math.sin(phi) * Math.sin(theta)
+      positions[i3 + 2] = r * Math.cos(phi)
+
+      // 随机选择颜色
+      const colorIdx = Math.floor(Math.random() * starColors.length)
+      const brightness = 0.4 + Math.random() * 0.5
+      colors[i3] = starColors[colorIdx][0] * brightness
+      colors[i3 + 1] = starColors[colorIdx][1] * brightness
+      colors[i3 + 2] = starColors[colorIdx][2] * brightness
+
+      sizes[i] = 0.6 + Math.random() * 1.0
+    }
+
+    const geo = new THREE.BufferGeometry()
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+
+    const mat = new THREE.PointsMaterial({
+      size: 0.7,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.85,
+      sizeAttenuation: true,
+    })
+
+    this.starfieldGroup.add(new THREE.Points(geo, mat))
+  }
+
+  // 近景亮星 — 稀疏、明亮、有闪烁潜力
+  private buildBrightStarfield() {
+    const count = this.isMobile ? 50 : 100
+    const positions = new Float32Array(count * 3)
+    const colors = new Float32Array(count * 3)
+
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3
+      const r = 150 + Math.random() * 200
+      const theta = Math.random() * Math.PI * 2
+      const phi = Math.acos(2 * Math.random() - 1)
+      positions[i3] = r * Math.sin(phi) * Math.cos(theta)
+      positions[i3 + 1] = r * Math.sin(phi) * Math.sin(theta)
+      positions[i3 + 2] = r * Math.cos(phi)
+
+      // 明亮的星星，带轻微色调
+      const brightness = 0.8 + Math.random() * 0.2
+      const tint = Math.random()
+      if (tint < 0.2) {
+        // 蓝白
+        colors[i3] = brightness * 0.85
+        colors[i3 + 1] = brightness * 0.95
+        colors[i3 + 2] = brightness
+      } else if (tint < 0.4) {
+        // 金白
+        colors[i3] = brightness
+        colors[i3 + 1] = brightness * 0.9
+        colors[i3 + 2] = brightness * 0.75
+      } else {
+        // 纯白
+        colors[i3] = brightness
+        colors[i3 + 1] = brightness
+        colors[i3 + 2] = brightness
+      }
+    }
+
+    const geo = new THREE.BufferGeometry()
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+
+    const mat = new THREE.PointsMaterial({
+      size: 1.5,
+      vertexColors: true,
+      transparent: true,
+      opacity: 1.0,
+      sizeAttenuation: true,
+    })
+
+    this.starfieldGroup.add(new THREE.Points(geo, mat))
+  }
+
+  // 星云雾气 — 神秘的紫色/蓝色渐变雾气
+  private buildNebulaCloud() {
+    // 创建多个星云区域
+    const nebulaConfigs = [
+      { center: [100, 50, -150], color: '#4a1a7a', size: 80, opacity: 0.06 },
+      { center: [-200, -30, 100], color: '#1a3a5a', size: 100, opacity: 0.05 },
+      { center: [0, 80, 200], color: '#2a1a4a', size: 60, opacity: 0.07 },
+      { center: [-150, -60, -200], color: '#3a2a5a', size: 90, opacity: 0.04 },
+      { center: [180, 0, 50], color: '#1a2a3a', size: 70, opacity: 0.05 },
+    ]
+
+    for (const config of nebulaConfigs) {
+      const spriteMat = new THREE.SpriteMaterial({
+        map: this.generateNebulaTexture(config.color, config.size),
+        transparent: true,
+        opacity: config.opacity,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      })
+      const sprite = new THREE.Sprite(spriteMat)
+      sprite.position.set(config.center[0], config.center[1], config.center[2])
+      sprite.scale.set(config.size * 2, config.size * 2, 1)
+      this.starfieldGroup.add(sprite)
+    }
+  }
+
+  // 生成星云纹理
+  private generateNebulaTexture(baseColor: string, size: number): THREE.Texture {
+    const canvas = document.createElement('canvas')
+    canvas.width = 256
+    canvas.height = 256
+    const ctx = canvas.getContext('2d')!
+
+    // 解析颜色
+    const color = new THREE.Color(baseColor)
+
+    // 创建径向渐变 — 从中心向外渐暗
+    const gradient = ctx.createRadialGradient(128, 128, 0, 128, 128, 128)
+    gradient.addColorStop(0, `rgba(${Math.floor(color.r * 255)}, ${Math.floor(color.g * 255)}, ${Math.floor(color.b * 255)}, 0.8)`)
+    gradient.addColorStop(0.3, `rgba(${Math.floor(color.r * 255)}, ${Math.floor(color.g * 255)}, ${Math.floor(color.b * 255)}, 0.4)`)
+    gradient.addColorStop(0.7, `rgba(${Math.floor(color.r * 200)}, ${Math.floor(color.g * 200)}, ${Math.floor(color.b * 220)}, 0.15)`)
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
+
+    ctx.fillStyle = gradient
+    ctx.fillRect(0, 0, 256, 256)
+
+    // 添加一些噪点纹理
+    for (let i = 0; i < 50; i++) {
+      const x = Math.random() * 256
+      const y = Math.random() * 256
+      const r = Math.random() * 3
+      const alpha = Math.random() * 0.3
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`
+      ctx.beginPath()
+      ctx.arc(x, y, r, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    const tex = new THREE.CanvasTexture(canvas)
+    return tex
+  }
+
+  // 银河带 — 横跨天空的淡蓝色光带
+  private buildMilkyWay() {
+    const count = this.isMobile ? 500 : 1000
+    const positions = new Float32Array(count * 3)
+    const colors = new Float32Array(count * 3)
+
+    // 银河带分布在一条倾斜的带状区域
+    const bandWidth = 40
+    const bandLength = 500
+    const bandTilt = 0.3 // 倾斜角度
+
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3
+      // 沿银河带分布
+      const t = Math.random() // 0-1 沿带长
+      const w = (Math.random() - 0.5) * bandWidth // 垂离带中心
+
+      // 带状区域坐标
+      const x = (t - 0.5) * bandLength
+      const y = w * Math.sin(bandTilt) + Math.random() * 10 - 5
+      const z = w * Math.cos(bandTilt) + 200 + Math.random() * 50
+
+      positions[i3] = x
+      positions[i3 + 1] = y
+      positions[i3 + 2] = z
+
+      // 银河色调 — 淡蓝紫混合
+      const brightness = 0.2 + Math.random() * 0.35
+      const hue = Math.random()
+      if (hue < 0.5) {
+        // 蓝色调
+        colors[i3] = brightness * 0.6
+        colors[i3 + 1] = brightness * 0.75
+        colors[i3 + 2] = brightness * 1.0
+      } else {
+        // 紫色调
+        colors[i3] = brightness * 0.75
+        colors[i3 + 1] = brightness * 0.55
+        colors[i3 + 2] = brightness * 0.9
+      }
+    }
+
+    const geo = new THREE.BufferGeometry()
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+
+    const mat = new THREE.PointsMaterial({
+      size: 0.5,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.5,
       sizeAttenuation: true,
     })
 
@@ -554,6 +804,28 @@ export class UniverseRenderer {
         const targetOpacity = this.hoveredId === id ? 0.9 : 0
         const mat = label.material as THREE.SpriteMaterial
         mat.opacity += (targetOpacity - mat.opacity) * 0.1
+      }
+    }
+
+    // 星空闪烁效果 — 让星空更有生命力
+    this.updateStarfieldTwinkle(time)
+  }
+
+  // 星空闪烁 — 模拟星星的微弱闪烁
+  private updateStarfieldTwinkle(time: number) {
+    // 遍历星空组中的所有粒子系统
+    let idx = 0
+    for (const child of this.starfieldGroup.children) {
+      if (child instanceof THREE.Points) {
+        const material = child.material as THREE.PointsMaterial
+        // 不同层有不同的闪烁频率
+        const flickerSpeed = idx === 0 ? 0.8 : idx === 1 ? 1.2 : 1.5
+        const flickerRange = idx === 0 ? 0.05 : idx === 1 ? 0.08 : 0.1
+        const baseOpacity = idx === 0 ? 0.6 : idx === 1 ? 0.85 : 1.0
+
+        // 添加整体的微弱波动
+        material.opacity = baseOpacity + Math.sin(time * flickerSpeed) * flickerRange
+        idx++
       }
     }
   }

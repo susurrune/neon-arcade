@@ -39,13 +39,45 @@ function readDB() {
     return JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'))
   } catch {
     const db = {
-      users: [],
+      users: [
+        // 系统官方账户
+        {
+          id: 'system',
+          username: 'system',
+          passwordHash: '$2a$10$systemaccount',
+          nickname: 'NEON ARCADE',
+          avatar: 'preset:1',
+          createdAt: '2025-01-01',
+          starColor: '#00F0FF',
+          starGlow: 0.8,
+          starRing: true,
+          starRingColor: '#00F0FF',
+        },
+        // sunny 用户账户
+        {
+          id: 'sunny123',
+          username: 'sunny123',
+          passwordHash: '$2a$10$placeholder', // 实际密码需要在注册时设置
+          nickname: 'sunny',
+          avatar: 'preset:3',
+          createdAt: '2026-04-27',
+          starColor: '#F59E0B',
+          starGlow: 0.7,
+          starRing: true,
+          starRingColor: '#FBBF24',
+        },
+      ],
       games: [
         { id: 'snake', title: '贪吃蛇', description: '经典像素贪吃蛇！加速冲刺、连击倍率、随机道具，在障碍中闪避求生。', authorId: 'system', authorName: 'NEON ARCADE', isOfficial: true, tags: ['益智'], likes: 42, views: 1280, date: '2025-01-15', planetColor: '#4ECDC4', planetSize: 0.8, hasRing: false, ringColor: '#ffffff', emissive: 0.4 },
         { id: 'tetris', title: '俄罗斯方块', description: '连消爽感升级！Perfect Clear奖励、技能系统、连击倍率——你能撑多久？', authorId: 'system', authorName: 'NEON ARCADE', isOfficial: true, tags: ['益智'], likes: 38, views: 960, date: '2025-02-01', planetColor: '#A855F7', planetSize: 0.9, hasRing: true, ringColor: '#E9D5FF', emissive: 0.5 },
         { id: 'platformer', title: '跳一跳', description: '赛博跑酷！二段跳、冲刺、敌人、金币、关卡目标——霓虹城市等你征服。', authorId: 'system', authorName: 'NEON ARCADE', isOfficial: true, tags: ['冒险'], likes: 35, views: 840, date: '2025-03-10', planetColor: '#7C3AED', planetSize: 0.7, hasRing: false, ringColor: '#ffffff', emissive: 0.3 },
         { id: 'shooter', title: '飞机大战', description: '爆款飞机大战！连击系统、武器升级、Boss战、技能爆发——活下去！', authorId: 'system', authorName: 'NEON ARCADE', isOfficial: true, tags: ['射击'], likes: 56, views: 2100, date: '2025-04-01', planetColor: '#FF2E88', planetSize: 1.2, hasRing: true, ringColor: '#FF6B9D', emissive: 0.7 },
         { id: 'asteroids', title: '霓虹陨石带', description: '360° 旋转飞船 + 惯性物理 + 陨石分裂 + 超空间瞬移。', authorId: 'system', authorName: 'NEON ARCADE', isOfficial: true, tags: ['射击'], likes: 31, views: 720, date: '2025-04-15', planetColor: '#22D3EE', planetSize: 0.6, hasRing: false, ringColor: '#ffffff', emissive: 0.5 },
+        // sunny 的游戏
+        { id: 'racing', title: '霓虹赛车', description: '极速漂移！四车道切换、障碍闪避、金币收集、难度递增——冲刺终点！', authorId: 'sunny123', authorName: 'sunny', isOfficial: false, tags: ['竞速'], likes: 28, views: 650, date: '2026-04-27', planetColor: '#F59E0B', planetSize: 0.8, hasRing: true, ringColor: '#FBBF24', emissive: 0.5 },
+        { id: 'towerdefense', title: '霓虹塔防', description: '策略防守！四种塔楼、波次挑战、路径规划——守护基地最后一防线！', authorId: 'sunny123', authorName: 'sunny', isOfficial: false, tags: ['策略'], likes: 33, views: 780, date: '2026-04-27', planetColor: '#10B981', planetSize: 0.8, hasRing: true, ringColor: '#34D399', emissive: 0.5 },
+        { id: 'warrior', title: '霓虹勇士', description: 'RPG战斗！WASD移动、四技能释放、敌人波次、升级解锁——成为最强勇士！', authorId: 'sunny123', authorName: 'sunny', isOfficial: false, tags: ['RPG'], likes: 45, views: 920, date: '2026-04-27', planetColor: '#8B5CF6', planetSize: 0.9, hasRing: true, ringColor: '#A78BFA', emissive: 0.6 },
+        { id: 'farm', title: '霓虹农场', description: '模拟经营！种植作物、浇水加速、养殖动物、收获赚钱——打造你的农场！', authorId: 'sunny123', authorName: 'sunny', isOfficial: false, tags: ['模拟'], likes: 22, views: 480, date: '2026-04-27', planetColor: '#EC4899', planetSize: 0.7, hasRing: true, ringColor: '#F472B6', emissive: 0.5 },
       ],
       comments: [],
       scores: [],

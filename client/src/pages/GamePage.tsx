@@ -14,11 +14,16 @@ import type { GameInfo, ScoreEntry } from '../api'
 import { t } from '../i18n'
 
 const FALLBACK_GAMES: GameInfo[] = [
-  { id: 'snake', name: '贪吃蛇', description: '经典像素贪吃蛇！加速冲刺、连击倍率、随机道具。', icon: 'snake', tags: ['经典'], date: '2026-04-26', isOfficial: true },
-  { id: 'tetris', name: '俄罗斯方块', description: '连消爽感升级！Perfect Clear奖励、技能系统。', icon: 'tetris', tags: ['消除'], date: '2026-04-26', isOfficial: true },
-  { id: 'platformer', name: '跳一跳', description: '蓄力精准跳跃！按住蓄力、释放跳跃，落点越准分数越高。', icon: 'platformer', tags: ['跳跃'], date: '2026-04-26', isOfficial: true },
-  { id: 'shooter', name: '飞机大战', description: '爆款飞机大战！连击系统、武器升级、Boss战。', icon: 'shooter', tags: ['射击'], date: '2026-04-26', isOfficial: true },
-  { id: 'asteroids', name: '霓虹陨石带', description: '360° 旋转飞船 + 惯性物理 + 陨石分裂 + 超空间瞬移。', icon: 'asteroids', tags: ['射击'], date: '2026-04-26', isOfficial: true },
+  { id: 'snake', name: '贪吃蛇', description: '经典像素贪吃蛇！加速冲刺、连击倍率、随机道具。', icon: 'snake', tags: ['益智'], date: '2026-04-26', isOfficial: true, likes: 42, views: 1280 },
+  { id: 'tetris', name: '俄罗斯方块', description: '连消爽感升级！Perfect Clear奖励、技能系统。', icon: 'tetris', tags: ['益智'], date: '2026-04-26', isOfficial: true, likes: 38, views: 960 },
+  { id: 'platformer', name: '跳一跳', description: '蓄力精准跳跃！按住蓄力、释放跳跃，落点越准分数越高。', icon: 'platformer', tags: ['冒险'], date: '2026-04-26', isOfficial: true, likes: 35, views: 840 },
+  { id: 'shooter', name: '飞机大战', description: '爆款飞机大战！连击系统、武器升级、Boss战。', icon: 'shooter', tags: ['射击'], date: '2026-04-26', isOfficial: true, likes: 56, views: 2100 },
+  { id: 'asteroids', name: '霓虹陨石带', description: '360° 旋转飞船 + 惯性物理 + 陨石分裂 + 超空间瞬移。', icon: 'asteroids', tags: ['射击'], date: '2026-04-26', isOfficial: true, likes: 31, views: 720 },
+  // sunny 的游戏
+  { id: 'racing', name: '霓虹赛车', description: '极速漂移！四车道切换、障碍闪避、金币收集、难度递增——冲刺终点！', icon: 'racing', tags: ['竞速'], authorId: 'sunny123', authorName: 'sunny', authorAvatar: 'preset:3', date: '2026-04-27', likes: 28, views: 650 },
+  { id: 'towerdefense', name: '霓虹塔防', description: '策略防守！四种塔楼、波次挑战、路径规划——守护基地最后一防线！', icon: 'towerdefense', tags: ['策略'], authorId: 'sunny123', authorName: 'sunny', authorAvatar: 'preset:3', date: '2026-04-27', likes: 33, views: 780 },
+  { id: 'warrior', name: '霓虹勇士', description: 'RPG战斗！WASD移动、四技能释放、敌人波次、升级解锁——成为最强勇士！', icon: 'warrior', tags: ['RPG'], authorId: 'sunny123', authorName: 'sunny', authorAvatar: 'preset:3', date: '2026-04-27', likes: 45, views: 920 },
+  { id: 'farm', name: '霓虹农场', description: '模拟经营！种植作物、浇水加速、养殖动物、收获赚钱——打造你的农场！', icon: 'farm', tags: ['模拟'], authorId: 'sunny123', authorName: 'sunny', authorAvatar: 'preset:3', date: '2026-04-27', likes: 22, views: 480 },
 ]
 
 const CONTROLS_ZH: Record<string, string> = {
@@ -61,6 +66,7 @@ export default function GamePage() {
   const [myRank, setMyRank] = useState<{ score: number; rank: number } | null>(null)
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false)
   const gameAreaRef = useRef<HTMLDivElement>(null)
+  const mainRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     if (games.length === 0) {
@@ -105,10 +111,23 @@ export default function GamePage() {
   }, [gameId, setHighScore, loadHighScore, token])
 
   const toggleFullscreen = useCallback(() => {
-    if (!document.fullscreenElement) {
-      gameAreaRef.current?.requestFullscreen?.()
-    } else {
-      document.exitFullscreen?.()
+    const elem = mainRef.current
+    if (!elem) {
+      console.warn('Fullscreen: main element not found')
+      return
+    }
+    try {
+      if (!document.fullscreenElement) {
+        elem.requestFullscreen().catch((err) => {
+          console.warn('Fullscreen request failed:', err.message)
+        })
+      } else {
+        document.exitFullscreen().catch((err) => {
+          console.warn('Exit fullscreen failed:', err.message)
+        })
+      }
+    } catch (e) {
+      console.warn('Fullscreen API error:', e)
     }
   }, [])
 
@@ -161,7 +180,7 @@ export default function GamePage() {
   const controlsText = (gameId && controlsMap[gameId]) || t('tap_start')
 
   return (
-    <main className="max-w-5xl mx-auto px-3 md:px-6 py-3 md:py-6">
+    <main ref={mainRef} className="max-w-5xl mx-auto px-3 md:px-6 py-3 md:py-6">
       {/* 教程覆盖层 */}
       {showTutorial && gameId && (
         <TutorialOverlay
@@ -176,7 +195,7 @@ export default function GamePage() {
           <button
             onClick={() => navigate('/')}
             aria-label="back"
-            className="text-gray-500 hover:text-neon-blue transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="text-text-muted hover:text-neon-blue transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
             <PixelIcon type="back" size={14} color="currentColor" />
           </button>
@@ -191,7 +210,7 @@ export default function GamePage() {
           </IconButton>
           <button
             onClick={toggleLang}
-            className="font-pixel text-[10px] md:text-xs px-2.5 h-9 border border-cyber-border text-gray-400 hover:text-neon-blue hover:border-neon-blue transition-colors"
+            className="font-pixel text-[10px] md:text-xs px-2.5 h-9 border border-cyber-border text-text-muted hover:text-neon-blue hover:border-neon-blue/50 transition-colors"
           >
             {lang === 'zh' ? '中' : 'EN'}
           </button>
@@ -233,21 +252,21 @@ export default function GamePage() {
         )}
       </div>
 
-      {/* ===== Controls bar — always visible, no longer hidden in <details> ===== */}
-      <div className="mt-4 p-3 md:p-4 border border-cyber-border bg-cyber-surface/40 flex flex-col md:flex-row md:items-center gap-3">
-        <span className="font-pixel text-[10px] md:text-[11px] text-gray-500 shrink-0">{t('controls')}</span>
-        <p className="font-mono text-sm md:text-[15px] text-gray-300 leading-relaxed flex-1">
+      {/* ===== Controls bar — always visible ===== */}
+      <div className="mt-4 p-3 md:p-4 border border-cyber-border bg-cyber-surface/40 flex flex-col md:flex-row md:items-center gap-3 rounded-lg">
+        <span className="font-pixel text-[10px] md:text-[11px] text-text-muted shrink-0">{t('controls')}</span>
+        <p className="font-mono text-sm md:text-[15px] text-text-secondary leading-relaxed flex-1">
           {controlsText}
         </p>
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={showTutorialAgain}
-            className="font-pixel text-[10px] px-3 py-1.5 border border-neon-purple/40 text-neon-purple hover:bg-neon-purple/10 transition-colors"
+            className="cyber-btn cyber-btn-sm border-neon-purple text-neon-purple"
           >
             {lang === 'zh' ? '教程' : 'TUTORIAL'}
           </button>
           {!isMobile && (
-            <p className="font-mono text-xs md:text-sm text-gray-600">
+            <p className="font-mono text-xs md:text-sm text-text-hint">
               P 暂停 · M 静音 · F 全屏 · Esc 返回
             </p>
           )}
@@ -259,22 +278,20 @@ export default function GamePage() {
       )}
 
       {/* ===== About ===== */}
-      <section className="mt-5 md:mt-7 p-4 md:p-5 bg-cyber-card border border-cyber-border rounded-lg relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-purple/30 to-transparent" />
-
+      <section className="mt-5 md:mt-7 cyber-card p-4 md:p-5">
         <h2 className="title-section neon-text-purple mb-3 flex items-center gap-3">
-          <div className="w-7 h-7 flex items-center justify-center rounded bg-black/30 border border-cyber-border">
+          <div className="section-title-icon">
             <PixelIcon type="sparkle" size={12} color="#a855f7" />
           </div>
           {t('about')}
         </h2>
-        <p className="text-body text-gray-400 leading-relaxed">
+        <p className="text-body text-text-secondary leading-relaxed">
           {gameId ? t(`desc_${gameId}`) : currentGame.description}
         </p>
         {currentGame.tags && currentGame.tags.length > 0 && (
           <div className="flex gap-2 mt-4 flex-wrap">
             {currentGame.tags.map((tag) => (
-              <span key={tag} className="game-tag game-tag-sm border-neon-blue/40 text-neon-blue bg-neon-blue/6">
+              <span key={tag} className="neon-tag-blue">
                 {tag}
               </span>
             ))}
@@ -283,12 +300,9 @@ export default function GamePage() {
       </section>
 
       {/* ===== Leaderboard ===== */}
-      <section className="mt-5 md:mt-7 p-4 md:p-5 bg-cyber-card border border-cyber-border rounded-lg relative overflow-hidden">
-        {/* Top glow line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-yellow/30 to-transparent" />
-
+      <section className="mt-5 md:mt-7 cyber-card p-4 md:p-5">
         <h2 className="title-section neon-text-yellow mb-4 flex items-center gap-3">
-          <div className="w-7 h-7 flex items-center justify-center rounded bg-black/30 border border-cyber-border">
+          <div className="section-title-icon">
             <PixelIcon type="star" size={12} color="#ffe600" />
           </div>
           {lang === 'zh' ? '排行榜' : 'LEADERBOARD'}

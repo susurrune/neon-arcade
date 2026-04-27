@@ -42,6 +42,11 @@ export default defineConfig({
           if (id.includes('/games/TetrisGame')) return 'game-tetris'
           if (id.includes('/games/PlatformerGame')) return 'game-platformer'
           if (id.includes('/games/ShooterGame')) return 'game-shooter'
+          if (id.includes('/games/AsteroidsGame')) return 'game-asteroids'
+          if (id.includes('/games/RacingGame')) return 'game-racing'
+          if (id.includes('/games/TowerDefenseGame')) return 'game-towerdefense'
+          if (id.includes('/games/WarriorGame')) return 'game-warrior'
+          if (id.includes('/games/FarmGame')) return 'game-farm'
         },
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',

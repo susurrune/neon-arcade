@@ -58,7 +58,10 @@ export interface UserInfo {
   starRingColor?: string
 }
 
-const API_BASE = '/api'
+// 动态 API 基础 URL：生产环境使用 Worker URL，开发环境使用本地代理
+const API_BASE = import.meta.env.PROD
+  ? 'https://neon-arcade-api.kna633336.workers.dev/api'
+  : '/api'
 
 function getToken(): string | null {
   return localStorage.getItem('neon_arcade_token')

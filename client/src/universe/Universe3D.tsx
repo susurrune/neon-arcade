@@ -349,21 +349,18 @@ function PlanetInfoCard({
   return (
     <div className="fixed left-4 bottom-16 z-20 w-80 md:w-96 animate-slide-up">
       <div className="cyber-card cyber-card-hover p-5 relative">
-        {/* Top gradient line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-blue/40 to-transparent" />
-
         {/* 关闭按钮 */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 rounded transition-colors"
+          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-text-muted hover:text-white hover:bg-white/10 rounded transition-colors"
         >
           ✕
         </button>
 
         {/* 标题行 */}
         <div className="flex items-center gap-4 mb-5">
-          {/* 星球图标 - 显示封面图或颜色 */}
+          {/* 星球图标 */}
           <div
             className="w-14 h-14 rounded-full flex-shrink-0 overflow-hidden border-2 border-white/10"
             style={{
@@ -388,7 +385,7 @@ function PlanetInfoCard({
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="font-pixel text-base md:text-lg text-white truncate">{planet.name}</h3>
-            <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-2">
+            <p className="text-xs text-text-muted mt-1.5 flex items-center gap-2">
               <span className="w-5 h-5 rounded-full overflow-hidden border border-white/10">
                 <Avatar avatar={planet.creatorAvatar} size={20} className="rounded-full" />
               </span>
@@ -398,56 +395,39 @@ function PlanetInfoCard({
         </div>
 
         {/* 描述 */}
-        <p className="text-sm text-gray-400 mb-5 line-clamp-2 leading-relaxed">{planet.description}</p>
+        <p className="text-sm text-text-secondary mb-5 line-clamp-2 leading-relaxed">{planet.description}</p>
 
         {/* 数据 */}
         <div className="grid grid-cols-3 gap-3 mb-5">
           <div className="text-center p-2 bg-black/20 rounded border border-cyber-border/30">
             <p className="font-mono text-base md:text-lg text-white font-semibold">{planet.playCount}</p>
-            <p className="text-[9px] text-gray-500 font-pixel mt-1">{isZh ? '游玩' : 'PLAYS'}</p>
+            <p className="text-[9px] text-text-muted font-pixel mt-1">{isZh ? '游玩' : 'PLAYS'}</p>
           </div>
           <div className="text-center p-2 bg-black/20 rounded border border-cyber-border/30">
-            <p className={`font-mono text-base md:text-lg font-semibold ${highScore > 0 ? 'neon-text-yellow' : 'text-gray-500'}`}>
+            <p className={`font-mono text-base md:text-lg font-semibold ${highScore > 0 ? 'neon-text-yellow' : 'text-text-muted'}`}>
               {highScore > 0 ? highScore.toLocaleString() : '---'}
             </p>
-            <p className="text-[9px] text-gray-500 font-pixel mt-1">{isZh ? '最高分' : 'HIGH'}</p>
+            <p className="text-[9px] text-text-muted font-pixel mt-1">{isZh ? '最高分' : 'HIGH'}</p>
           </div>
           <div className="text-center p-2 bg-black/20 rounded border border-cyber-border/30">
-            <p className={`font-mono text-base md:text-lg font-semibold ${planet.rating > 0 ? 'text-gray-200' : 'text-gray-500'}`}>
+            <p className={`font-mono text-base md:text-lg font-semibold ${planet.rating > 0 ? 'text-text-secondary' : 'text-text-muted'}`}>
               {planet.rating > 0 ? planet.rating.toFixed(1) : '---'}
             </p>
-            <p className="text-[9px] text-gray-500 font-pixel mt-1">{isZh ? '评分' : 'RATE'}</p>
+            <p className="text-[9px] text-text-muted font-pixel mt-1">{isZh ? '评分' : 'RATE'}</p>
           </div>
-        </div>
-
-        {/* 星球属性 */}
-        <div className="flex items-center gap-4 mb-5 text-xs text-gray-500 border-t border-cyber-border/30 pt-4">
-          <span className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded-full" style={{ background: planet.color, boxShadow: `0 0 6px ${planet.color}66` }} />
-            {isZh ? '颜色' : 'Color'}
-          </span>
-          <span className="font-mono">ø {planet.size.toFixed(1)}</span>
-          {planet.hasRing && (
-            <span className="flex items-center gap-1 text-neon-purple">
-              💍 {isZh ? '行星环' : 'Ring'}
-            </span>
-          )}
-          <span className="flex items-center gap-1">
-            ✨ {planet.emissive.toFixed(1)}
-          </span>
         </div>
 
         {/* 进入游戏按钮 */}
         <button
           type="button"
           onClick={onEnterGame}
-          className="cyber-btn cyber-btn-lg w-full border-neon-blue text-neon-blue hover:bg-neon-blue/15"
+          className="cyber-btn cyber-btn-lg w-full border-neon-blue text-neon-blue hover:bg-neon-blue/10"
         >
           {isZh ? '进入游戏 →' : 'ENTER GAME →'}
         </button>
 
         {/* 提示 */}
-        <p className="text-center text-[9px] text-gray-500 mt-3 font-pixel">
+        <p className="text-center text-[9px] text-text-hint mt-3 font-pixel">
           {isZh ? '双击行星可直接进入' : 'Double-click planet to enter directly'}
         </p>
       </div>
@@ -468,13 +448,10 @@ function StarInfoCard({
   return (
     <div className="fixed left-4 bottom-16 z-20 w-80 md:w-96 animate-slide-up">
       <div className="cyber-card cyber-card-hover p-5 relative">
-        {/* Top gradient line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-yellow-400/40 to-transparent" />
-
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 rounded transition-colors"
+          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-text-muted hover:text-white hover:bg-white/10 rounded transition-colors"
         >
           ✕
         </button>
@@ -485,7 +462,7 @@ function StarInfoCard({
           </div>
           <div>
             <h3 className="font-pixel text-base md:text-lg text-white">{star.ownerName}</h3>
-            <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-2">
+            <p className="text-xs text-text-muted mt-1.5 flex items-center gap-2">
               ⭐ {isZh ? '创作者' : 'Creator'}
             </p>
           </div>
@@ -493,15 +470,15 @@ function StarInfoCard({
 
         {/* 发布的游戏列表 */}
         <div className="mb-5 border-t border-cyber-border/30 pt-4">
-          <p className="text-xs text-gray-500 mb-3 font-pixel">
+          <p className="text-xs text-text-muted mb-3 font-pixel">
             {isZh ? `已发布 ${star.planets.length} 个游戏` : `${star.planets.length} games published`}
           </p>
           <div className="flex flex-wrap gap-2">
             {star.planets.map(p => (
               <span
                 key={p.id}
-                className="game-tag game-tag-sm text-gray-300"
-                style={{ borderLeftColor: p.color, borderLeftWidth: 3, borderColor: 'rgba(58,58,92,0.5)' }}
+                className="game-tag game-tag-sm text-text-secondary"
+                style={{ borderLeftColor: p.color, borderLeftWidth: 3 }}
               >
                 {p.name}
               </span>
@@ -512,7 +489,7 @@ function StarInfoCard({
         <button
           type="button"
           onClick={onViewProfile}
-          className="cyber-btn w-full text-gray-400 border-white/10 hover:text-white hover:border-white/20"
+          className="cyber-btn w-full text-text-muted border-white/10 hover:text-white hover:border-white/20"
         >
           {isZh ? '查看资料' : 'VIEW PROFILE'}
         </button>
@@ -529,4 +506,8 @@ const FALLBACK_GAMES: GameInfo[] = [
   { id: 'platformer', name: '跳一跳', description: '赛博跑酷！二段跳、冲刺、敌人、金币、关卡目标——霓虹城市等你征服。', icon: 'platformer', tags: ['冒险'], date: '2026-04-26', isOfficial: true, likes: 35, views: 840 },
   { id: 'shooter', name: '飞机大战', description: '爆款飞机大战！连击系统、武器升级、Boss战、技能爆发——活下去！', icon: 'shooter', tags: ['射击'], date: '2026-04-26', isOfficial: true, likes: 56, views: 2100 },
   { id: 'asteroids', name: '霓虹陨石带', description: '360° 旋转飞船，惯性物理，陨石碎裂分裂，超空间瞬移——清波生存战。', icon: 'asteroids', tags: ['射击'], date: '2026-04-26', isOfficial: true, likes: 31, views: 720 },
+  { id: 'racing', name: '霓虹赛车', description: '极速漂移！四车道切换、障碍闪避、金币收集、难度递增——冲刺终点！', icon: 'racing', tags: ['竞速'], authorId: 'sunny123', authorName: 'sunny', authorAvatar: 'preset:3', authorStarColor: '#F59E0B', authorStarGlow: 0.7, authorStarRing: true, authorStarRingColor: '#FBBF24', date: '2026-04-27', likes: 28, views: 650, planetColor: '#F59E0B' },
+  { id: 'towerdefense', name: '霓虹塔防', description: '策略防守！四种塔楼、波次挑战、路径规划——守护基地最后一防线！', icon: 'towerdefense', tags: ['策略'], authorId: 'sunny123', authorName: 'sunny', authorAvatar: 'preset:3', authorStarColor: '#10B981', authorStarGlow: 0.7, authorStarRing: true, authorStarRingColor: '#34D399', date: '2026-04-27', likes: 33, views: 780, planetColor: '#10B981' },
+  { id: 'warrior', name: '霓虹勇士', description: 'RPG战斗！WASD移动、四技能释放、敌人波次、升级解锁——成为最强勇士！', icon: 'warrior', tags: ['RPG'], authorId: 'sunny123', authorName: 'sunny', authorAvatar: 'preset:3', authorStarColor: '#8B5CF6', authorStarGlow: 0.8, authorStarRing: true, authorStarRingColor: '#A78BFA', date: '2026-04-27', likes: 45, views: 920, planetColor: '#8B5CF6' },
+  { id: 'farm', name: '霓虹农场', description: '模拟经营！种植作物、浇水加速、养殖动物、收获赚钱——打造你的农场！', icon: 'farm', tags: ['模拟'], authorId: 'sunny123', authorName: 'sunny', authorAvatar: 'preset:3', authorStarColor: '#EC4899', authorStarGlow: 0.7, authorStarRing: true, authorStarRingColor: '#F472B6', date: '2026-04-27', likes: 22, views: 480, planetColor: '#EC4899' },
 ]

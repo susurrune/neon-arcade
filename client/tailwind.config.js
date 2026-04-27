@@ -18,15 +18,31 @@ export default {
     },
     extend: {
       colors: {
-        'cyber-bg': '#0f0f1a',
-        'cyber-surface': '#1a1a2e',
-        'cyber-card': '#252540',
-        'cyber-border': '#3a3a5c',
-        'neon-blue': '#00f0ff',
-        'neon-purple': '#b026ff',
-        'neon-pink': '#ff2d95',
-        'neon-green': '#39ff14',
-        'neon-yellow': '#ffe600',
+        // 使用 CSS 变量引用 oklch 颜色
+        'cyber-bg': 'var(--cyber-bg)',
+        'cyber-surface': 'var(--cyber-surface)',
+        'cyber-card': 'var(--cyber-card)',
+        'cyber-border': 'var(--cyber-border)',
+        'neon-blue': 'var(--neon-blue)',
+        'neon-blue-dim': 'var(--neon-blue-dim)',
+        'neon-blue-glow': 'var(--neon-blue-glow)',
+        'neon-purple': 'var(--neon-purple)',
+        'neon-purple-dim': 'var(--neon-purple-dim)',
+        'neon-purple-glow': 'var(--neon-purple-glow)',
+        'neon-pink': 'var(--neon-pink)',
+        'neon-pink-dim': 'var(--neon-pink-dim)',
+        'neon-pink-glow': 'var(--neon-pink-glow)',
+        'neon-green': 'var(--neon-green)',
+        'neon-green-dim': 'var(--neon-green-dim)',
+        'neon-green-glow': 'var(--neon-green-glow)',
+        'neon-yellow': 'var(--neon-yellow)',
+        'neon-yellow-dim': 'var(--neon-yellow-dim)',
+        'neon-yellow-glow': 'var(--neon-yellow-glow)',
+        // 文字层次
+        'text-primary': 'var(--text-primary)',
+        'text-secondary': 'var(--text-secondary)',
+        'text-muted': 'var(--text-muted)',
+        'text-hint': 'var(--text-hint)',
       },
       fontFamily: {
         pixel: ['"Press Start 2P"', 'monospace'],
@@ -35,24 +51,25 @@ export default {
         sans: ['"Noto Sans SC"', '"JetBrains Mono"', 'sans-serif'],
       },
       boxShadow: {
-        'neon-blue': '0 0 7px #00f0ff, 0 0 20px rgba(0,240,255,0.3), 0 0 42px rgba(0,240,255,0.1)',
-        'neon-purple': '0 0 7px #b026ff, 0 0 20px rgba(176,38,255,0.3), 0 0 42px rgba(176,38,255,0.1)',
-        'neon-pink': '0 0 7px #ff2d95, 0 0 20px rgba(255,45,149,0.3), 0 0 42px rgba(255,45,149,0.1)',
-        'neon-green': '0 0 7px #39ff14, 0 0 20px rgba(57,255,20,0.3), 0 0 42px rgba(57,255,20,0.1)',
-        'neon-yellow': '0 0 7px #ffe600, 0 0 20px rgba(255,230,0,0.3), 0 0 42px rgba(255,230,0,0.1)',
-        // Subtle inset glow for panel surfaces
-        'neon-inset': 'inset 0 0 20px rgba(0,240,255,0.04)',
+        // 克制的发光效果 — 单层柔和光晕
+        'neon-blue': '0 0 6px oklch(0.85 0.18 195 / 0.25)',
+        'neon-blue-md': '0 0 10px oklch(0.85 0.18 195 / 0.4)',
+        'neon-purple': '0 0 6px oklch(0.55 0.20 285 / 0.25)',
+        'neon-purple-md': '0 0 10px oklch(0.55 0.20 285 / 0.4)',
+        'neon-pink': '0 0 6px oklch(0.65 0.22 345 / 0.25)',
+        'neon-pink-md': '0 0 10px oklch(0.65 0.22 345 / 0.4)',
+        'neon-green': '0 0 6px oklch(0.82 0.18 145 / 0.25)',
+        'neon-green-md': '0 0 10px oklch(0.82 0.18 145 / 0.4)',
+        'neon-yellow': '0 0 6px oklch(0.88 0.18 95 / 0.25)',
+        'neon-yellow-md': '0 0 10px oklch(0.88 0.18 95 / 0.4)',
       },
       animation: {
         'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
         'scanline': 'scanline 8s linear infinite',
         'float': 'float 6s ease-in-out infinite',
         'flicker': 'flicker 0.15s infinite',
-        // New: subtle data-stream ticker for decorative elements
         'data-stream': 'data-stream 20s linear infinite',
-        // New: smooth fade-in for lazy-loaded content
         'fade-in': 'fade-in 0.3s ease-out forwards',
-        // New: slide-up entrance for cards / panels
         'slide-up': 'slide-up 0.4s cubic-bezier(0.33,1,0.68,1) forwards',
       },
       keyframes: {
@@ -86,13 +103,15 @@ export default {
           to: { opacity: '1', transform: 'translateY(0)' },
         },
       },
-      // Backdrop blur levels for glassmorphism panels
       backdropBlur: {
         xs: '2px',
       },
-      // Consistent timing functions across the design system
       transitionTimingFunction: {
         'cyber': 'cubic-bezier(0.33, 1, 0.68, 1)',
+      },
+      borderRadius: {
+        'sm': '6px',
+        'lg': '16px',
       },
     },
   },

@@ -31,6 +31,24 @@ export const INPUT_MAP: Record<string, Record<string, { key: string; code: strin
     fire: { key: ' ', code: 'Space' },
     teleport: { key: 'Shift', code: 'ShiftLeft' },
   },
+  racing: {
+    left: { key: 'ArrowLeft', code: 'ArrowLeft' },
+    right: { key: 'ArrowRight', code: 'ArrowRight' },
+    start: { key: ' ', code: 'Space' },
+  },
+  towerdefense: {
+    start: { key: ' ', code: 'Space' },
+  },
+  warrior: {
+    up: { key: 'ArrowUp', code: 'ArrowUp' },
+    down: { key: 'ArrowDown', code: 'ArrowDown' },
+    left: { key: 'ArrowLeft', code: 'ArrowLeft' },
+    right: { key: 'ArrowRight', code: 'ArrowRight' },
+    skill: { key: ' ', code: 'Space' },
+  },
+  farm: {
+    start: { key: ' ', code: 'Space' },
+  },
 }
 
 // 当前活动画布

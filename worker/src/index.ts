@@ -1,10 +1,11 @@
 import { handleAuth } from './routes/auth'
 import { handleGames } from './routes/games'
 import { handleComments } from './routes/comments'
+import { handleUser } from './routes/user'
+import { handleScores } from './routes/scores'
 
 interface Env {
   DB: D1Database
-  GAME_BUCKET: R2Bucket
   JWT_SECRET: string
 }
 
@@ -30,10 +31,14 @@ export default {
 
       if (path.startsWith('/api/auth')) {
         response = await handleAuth(request, path, env)
+      } else if (path.startsWith('/api/user')) {
+        response = await handleUser(request, path, env)
       } else if (path.startsWith('/api/games')) {
         response = await handleGames(request, path, env)
       } else if (path.startsWith('/api/comments')) {
         response = await handleComments(request, path, env)
+      } else if (path.startsWith('/api/scores')) {
+        response = await handleScores(request, path, env)
       } else {
         response = new Response('Not found', { status: 404 })
       }

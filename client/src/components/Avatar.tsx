@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 // 12 预设头像配色 (霓虹赛博风)
 const AVATAR_PRESETS = [
@@ -18,7 +18,6 @@ const AVATAR_PRESETS = [
 
 function generateAvatarSvg(index: number, size: number = 64): string {
   const p = AVATAR_PRESETS[index % AVATAR_PRESETS.length]
-  // Pixel face pattern
   const pixels = [
     [0,1,1,1,1,0],
     [1,0,1,1,0,1],
@@ -52,7 +51,7 @@ export function getAvatarUrl(avatar: string, size: number = 64): string {
     const idx = parseInt(avatar.split(':')[1], 10) - 1
     return generateAvatarSvg(idx, size)
   }
-  // Custom URL
+  // Base64 或 URL
   return avatar
 }
 
@@ -63,7 +62,7 @@ export function Avatar({ avatar, size = 40, className = '', style }: {
   style?: React.CSSProperties
 }) {
   const safeAvatar = avatar || 'preset:1'
-  const src = getAvatarUrl(safeAvatar, size * 2) // 2x for retina
+  const src = getAvatarUrl(safeAvatar, size * 2)
   return (
     <img
       src={src}
@@ -80,30 +79,95 @@ export function AvatarPicker({ value, onChange }: {
   value: string
   onChange: (avatar: string) => void
 }) {
-  const [showUpload, setShowUpload] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setError('')
+    setUploading(true)
+
+    try {
+      // 压缩图片到 64x64, 最大 100KB
+      const img = new Image()
+      img.onload = async () => {
+        const canvas = document.createElement('canvas')
+        const maxSize = 64
+        canvas.width = maxSize
+        canvas.height = maxSize
+        const ctx = canvas.getContext('2d')!
+        ctx.drawImage(img, 0, 0, maxSize, maxSize)
+
+        // 转 base64 (PNG)
+        const base64 = canvas.toDataURL('image/png', 0.8)
+
+        // 检查大小
+        if (base64.length > 150000) {
+          setError('图片过大，请选择更小的图片')
+          setUploading(false)
+          return
+        }
+
+        // 上传
+        const token = localStorage.getItem('neon_arcade_token')
+        const res = await fetch('/api/user/avatar', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ base64 }),
+        })
+
+        if (!res.ok) {
+          const data = await res.json()
+          setError(data.error || '上传失败')
+          setUploading(false)
+          return
+        }
+
+        const data = await res.json()
+        onChange(data.avatar)
+        setUploading(false)
+      }
+      img.onerror = () => {
+        setError('图片加载失败')
+        setUploading(false)
+      }
+      img.src = URL.createObjectURL(file)
+    } catch (err) {
+      setError('上传失败')
+      setUploading(false)
+    }
+  }
 
   return (
     <div>
       <p className="font-pixel text-[10px] md:text-[11px] neon-text-blue mb-3">选择头像</p>
-      <div className="grid grid-cols-4 gap-3 mb-4">
-        {AVATAR_PRESETS.map((_, i) => {
+
+      {/* 预设头像 */}
+      <div className="grid grid-cols-4 gap-2 mb-3">
+        {AVATAR_PRESETS.map((preset, i) => {
           const presetId = `preset:${i + 1}`
           const isSelected = value === presetId
           return (
             <button
               key={presetId}
               onClick={() => onChange(presetId)}
-              className={`p-1 border-2 transition-all min-h-[56px] ${
+              className={`p-2 border-2 transition-all relative ${
                 isSelected
-                  ? 'border-neon-blue shadow-[0_0_8px_rgba(0,240,255,0.4)]'
-                  : 'border-cyber-border hover:border-cyber-border/80'
+                  ? 'border-neon-blue bg-neon-blue/10'
+                  : 'border-cyber-border hover:border-neon-blue/50'
               }`}
+              title={preset.label}
             >
               <img
-                src={generateAvatarSvg(i, 80)}
+                src={generateAvatarSvg(i, 64)}
                 alt={`Avatar ${i + 1}`}
-                width={48}
-                height={48}
+                width={32}
+                height={32}
                 className="mx-auto"
                 style={{ imageRendering: 'pixelated' }}
               />
@@ -111,37 +175,32 @@ export function AvatarPicker({ value, onChange }: {
           )
         })}
       </div>
+
+      {/* 上传按钮 */}
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/png,image/jpeg,image/gif,image/webp"
+        onChange={handleUpload}
+        className="hidden"
+      />
       <button
-        onClick={() => setShowUpload(!showUpload)}
-        className="font-pixel text-[10px] text-gray-500 hover:text-neon-purple transition-colors"
+        onClick={() => fileRef.current?.click()}
+        disabled={uploading}
+        className={`font-pixel text-[10px] px-4 py-2 border transition-all ${
+          uploading
+            ? 'border-gray-500 text-gray-500'
+            : 'border-neon-purple text-neon-purple hover:bg-neon-purple/20'
+        }`}
       >
-        {showUpload ? '取消上传' : '+ 上传自定义头像'}
+        {uploading ? '上传中...' : '上传自定义头像'}
       </button>
-      {showUpload && (
-        <div className="mt-3">
-          <input
-            type="file"
-            accept="image/jpeg,image/png"
-            onChange={async (e) => {
-              const file = e.target.files?.[0]
-              if (!file) return
-              if (file.size > 2 * 1024 * 1024) {
-                alert('最大 2MB')
-                return
-              }
-              try {
-                const { userApi } = await import('../api')
-                const result = await userApi.uploadAvatar(file)
-                onChange(result.avatar)
-              } catch (err) {
-                console.error('Upload failed:', err)
-              }
-            }}
-            className="text-sm text-gray-400"
-          />
-          <p className="text-[10px] text-gray-600 mt-1">JPG/PNG, 最大 2MB</p>
-        </div>
+
+      {error && (
+        <p className="font-pixel text-[10px] text-neon-pink mt-2">{error}</p>
       )}
+
+      <p className="text-[10px] text-gray-500 mt-2">PNG/JPG, 建议 64x64, 最大 100KB</p>
     </div>
   )
 }

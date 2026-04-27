@@ -66,6 +66,11 @@ export interface GalaxyData {
   center: THREE.Vector3
   radius: number
 
+  // 星系轨道参数（绕宇宙中心）
+  orbitRadius: number
+  orbitAngle: number      // 当前角度
+  orbitSpeed: number      // 旋转速度
+
   starSystems: StarSystemData[]
 }
 
@@ -180,22 +185,24 @@ export class UniverseEngine {
     this.allPlanets.clear()
     this.allStars.clear()
 
-    // 1. 初始化所有星系（固定位置，圆环分布）
+    // 1. 初始化所有星系（圆环分布 + 轨道参数）
     const galaxyCount = GALAXY_DEFS.length
     const universeRadius = 80 // 宇宙半径
 
     GALAXY_DEFS.forEach((def, i) => {
-      const angle = (i / galaxyCount) * Math.PI * 2
-      const cx = Math.cos(angle) * universeRadius
-      const cz = Math.sin(angle) * universeRadius
+      const initAngle = (i / galaxyCount) * Math.PI * 2
+      const orbitRadius = universeRadius
 
       this.galaxies.push({
         id: def.id,
         nameZh: def.nameZh,
         nameEn: def.nameEn,
         color: def.color,
-        center: new THREE.Vector3(cx, 0, cz),
+        center: new THREE.Vector3(0, 0, 0), // 动态计算
         radius: 25,
+        orbitRadius,
+        orbitAngle: initAngle,
+        orbitSpeed: 0.003 + seededRandom(strSeed(def.id)) * 0.002, // 缓慢旋转
         starSystems: [],
       })
     })
@@ -287,11 +294,17 @@ export class UniverseEngine {
     this.elapsed = 0
   }
 
-  /** 每帧更新 — 只做轨道运动 */
+  /** 每帧更新 — 轨道运动 + 星系旋转 */
   update(dt: number) {
     this.elapsed += dt
 
     for (const galaxy of this.galaxies) {
+      // 星系绕宇宙中心缓慢旋转
+      galaxy.orbitAngle += galaxy.orbitSpeed * dt
+      const cx = Math.cos(galaxy.orbitAngle) * galaxy.orbitRadius
+      const cz = Math.sin(galaxy.orbitAngle) * galaxy.orbitRadius
+      galaxy.center.set(cx, 0, cz)
+
       for (const star of galaxy.starSystems) {
         // 恒星绕星系中心公转
         star.orbitAngle += star.orbitSpeed * dt

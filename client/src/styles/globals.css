@@ -4,20 +4,59 @@
 
 /* ============================================
    NEON ARCADE v2 — Cyberpunk Pixel Design System
+   使用 oklch 感知均匀色彩空间，派生和谐的配色方案
    ============================================ */
 
 :root {
-  --cyber-bg: #0f0f1a;
-  --cyber-surface: #1a1a2e;
-  --cyber-card: #252540;
-  --cyber-border: #3a3a5c;
-  --neon-blue: #00f0ff;
-  --neon-purple: #7C3AED;
-  --neon-cyan: #22D3EE;
-  --neon-pink: #FF2E88;
-  --neon-green: #39ff14;
-  --neon-yellow: #ffe600;
+  /* ============ oklch 色彩系统 ============
+     oklch(L C H) 格式：
+     L = 亮度 0-1 (感知均匀)
+     C = 色度 0-0.4 (饱和度)
+     H = 色相 0-360
+
+     基础色在感知上看起来同样亮度，避免 HSL 的亮度错觉 */
+
+  /* 主色系 — 蓝色调赛博感 */
+  --neon-blue: oklch(0.85 0.18 195);      /* 青蓝 #00f0ff */
+  --neon-blue-dim: oklch(0.70 0.12 195);   /* 暗青蓝 */
+  --neon-blue-glow: oklch(0.90 0.22 195);  /* 发光青蓝 */
+
+  /* 紫色系 — 神秘科技 */
+  --neon-purple: oklch(0.55 0.20 285);     /* 紫色 #7C3AED */
+  --neon-purple-dim: oklch(0.40 0.14 285);
+  --neon-purple-glow: oklch(0.60 0.24 285);
+
+  /* 粉色系 — 活力警告 */
+  --neon-pink: oklch(0.65 0.22 345);       /* 粉红 #FF2E88 */
+  --neon-pink-dim: oklch(0.50 0.16 345);
+  --neon-pink-glow: oklch(0.70 0.26 345);
+
+  /* 绿色系 — 成功状态 */
+  --neon-green: oklch(0.82 0.18 145);      /* 荧光绿 #39ff14 */
+  --neon-green-dim: oklch(0.68 0.12 145);
+  --neon-green-glow: oklch(0.88 0.22 145);
+
+  /* 黄色系 — 金币高亮 */
+  --neon-yellow: oklch(0.88 0.18 95);      /* 金黄 #ffe600 */
+  --neon-yellow-dim: oklch(0.72 0.12 95);
+  --neon-yellow-glow: oklch(0.92 0.22 95);
+
+  /* 背景层次 — 深邃宇宙感 */
+  --cyber-bg: oklch(0.12 0.02 260);        /* 最深层 #0f0f1a */
+  --cyber-surface: oklch(0.18 0.03 260);   /* 表面层 #1a1a2e */
+  --cyber-card: oklch(0.24 0.04 260);      /* 卡片层 #252540 */
+  --cyber-border: oklch(0.30 0.05 260);    /* 边框层 #3a3a5c */
+
+  /* 文字层次 */
+  --text-primary: oklch(0.85 0.02 260);    /* 主要文字 */
+  --text-secondary: oklch(0.70 0.02 260);  /* 次级文字 */
+  --text-muted: oklch(0.55 0.02 260);      /* 弱化文字 */
+  --text-hint: oklch(0.40 0.02 260);       /* 提示文字 */
+
+  /* UI 参数 */
   --radius: 12px;
+  --radius-sm: 6px;
+  --radius-lg: 16px;
   --transition-speed: 200ms;
   --transition-easing: cubic-bezier(0.33, 1, 0.68, 1);
   --glow-min: 8px;
@@ -65,7 +104,7 @@ body {
   font-size: var(--fs-body-md);
   line-height: var(--lh-base);
   background: var(--cyber-bg);
-  color: #c8c8d4;
+  color: var(--text-secondary);
   /* Cross-browser font rendering — sharper text, smoother edges */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -111,36 +150,42 @@ p {
 ::-webkit-scrollbar-thumb:hover { background: var(--neon-blue); }
 
 /* ============================================
-   Neon Text Effects
+   Neon Text Effects — 克制的发光，避免俗套
    ============================================ */
 
+/* 基础发光 — 单层柔和光晕，不叠加多层 */
 .neon-text-blue {
   color: var(--neon-blue);
-  text-shadow: 0 0 7px var(--neon-blue), 0 0 20px rgba(0,240,255,0.4), 0 0 42px rgba(0,240,255,0.15);
+  text-shadow: 0 0 8px oklch(0.85 0.18 195 / 0.5);
 }
 
 .neon-text-purple {
   color: var(--neon-purple);
-  text-shadow: 0 0 7px var(--neon-purple), 0 0 20px rgba(176,38,255,0.4), 0 0 42px rgba(176,38,255,0.15);
+  text-shadow: 0 0 8px oklch(0.55 0.20 285 / 0.5);
 }
 
 .neon-text-pink {
   color: var(--neon-pink);
-  text-shadow: 0 0 7px var(--neon-pink), 0 0 20px rgba(255,45,149,0.4), 0 0 42px rgba(255,45,149,0.15);
+  text-shadow: 0 0 8px oklch(0.65 0.22 345 / 0.5);
 }
 
 .neon-text-green {
   color: var(--neon-green);
-  text-shadow: 0 0 7px var(--neon-green), 0 0 20px rgba(57,255,20,0.4), 0 0 42px rgba(57,255,20,0.15);
+  text-shadow: 0 0 8px oklch(0.82 0.18 145 / 0.5);
 }
 
 .neon-text-yellow {
   color: var(--neon-yellow);
-  text-shadow: 0 0 7px var(--neon-yellow), 0 0 20px rgba(255,230,0,0.4), 0 0 42px rgba(255,230,0,0.15);
+  text-shadow: 0 0 8px oklch(0.88 0.18 95 / 0.5);
+}
+
+/* 强发光状态 — 仅用于需要突出的元素 */
+.neon-glow-strong {
+  text-shadow: 0 0 12px currentColor, 0 0 24px currentColor;
 }
 
 /* ============================================
-   Neon Buttons
+   Neon Buttons — 精致的边框发光，避免过度
    ============================================ */
 
 .neon-btn {
@@ -157,74 +202,76 @@ p {
   @apply neon-btn;
   color: var(--neon-blue);
   border-color: var(--neon-blue);
-  box-shadow: 0 0 5px rgba(0,240,255,0.3), inset 0 0 5px rgba(0,240,255,0.1);
+  box-shadow: 0 0 6px oklch(0.85 0.18 195 / 0.25);
 }
 
 .neon-btn-blue:hover {
-  background: rgba(0,240,255,0.1);
-  box-shadow: 0 0 15px rgba(0,240,255,0.5), inset 0 0 15px rgba(0,240,255,0.2), 0 0 30px rgba(0,240,255,0.2);
-  text-shadow: 0 0 7px var(--neon-blue);
+  background: oklch(0.85 0.18 195 / 0.08);
+  box-shadow: 0 0 10px oklch(0.85 0.18 195 / 0.4);
+  text-shadow: 0 0 6px var(--neon-blue);
 }
 
 .neon-btn-purple {
   @apply neon-btn;
   color: var(--neon-purple);
   border-color: var(--neon-purple);
-  box-shadow: 0 0 5px rgba(176,38,255,0.3), inset 0 0 5px rgba(176,38,255,0.1);
+  box-shadow: 0 0 6px oklch(0.55 0.20 285 / 0.25);
 }
 
 .neon-btn-purple:hover {
-  background: rgba(176,38,255,0.1);
-  box-shadow: 0 0 15px rgba(176,38,255,0.5), inset 0 0 15px rgba(176,38,255,0.2), 0 0 30px rgba(176,38,255,0.2);
-  text-shadow: 0 0 7px var(--neon-purple);
+  background: oklch(0.55 0.20 285 / 0.08);
+  box-shadow: 0 0 10px oklch(0.55 0.20 285 / 0.4);
+  text-shadow: 0 0 6px var(--neon-purple);
 }
 
 .neon-btn-pink {
   @apply neon-btn;
   color: var(--neon-pink);
   border-color: var(--neon-pink);
-  box-shadow: 0 0 5px rgba(255,45,149,0.3), inset 0 0 5px rgba(255,45,149,0.1);
+  box-shadow: 0 0 6px oklch(0.65 0.22 345 / 0.25);
 }
 
 .neon-btn-pink:hover {
-  background: rgba(255,45,149,0.1);
-  box-shadow: 0 0 15px rgba(255,45,149,0.5), inset 0 0 15px rgba(255,45,149,0.2), 0 0 30px rgba(255,45,149,0.2);
-  text-shadow: 0 0 7px var(--neon-pink);
+  background: oklch(0.65 0.22 345 / 0.08);
+  box-shadow: 0 0 10px oklch(0.65 0.22 345 / 0.4);
+  text-shadow: 0 0 6px var(--neon-pink);
 }
 
 .neon-btn-green {
   @apply neon-btn;
   color: var(--neon-green);
   border-color: var(--neon-green);
-  box-shadow: 0 0 5px rgba(57,255,20,0.3), inset 0 0 5px rgba(57,255,20,0.1);
+  box-shadow: 0 0 6px oklch(0.82 0.18 145 / 0.25);
 }
 
 .neon-btn-green:hover {
-  background: rgba(57,255,20,0.1);
-  box-shadow: 0 0 15px rgba(57,255,20,0.5), inset 0 0 15px rgba(57,255,20,0.2), 0 0 30px rgba(57,255,20,0.2);
-  text-shadow: 0 0 7px var(--neon-green);
+  background: oklch(0.82 0.18 145 / 0.08);
+  box-shadow: 0 0 10px oklch(0.82 0.18 145 / 0.4);
+  text-shadow: 0 0 6px var(--neon-green);
 }
 
 /* ============================================
-   Game Cards
+   Game Cards — 克制的悬停效果
    ============================================ */
 
 .game-card {
   @apply bg-cyber-card border border-cyber-border p-4 cursor-pointer transition-all duration-300 relative overflow-hidden;
   /* Containment: layout & paint changes stay within this element */
   contain: layout style paint;
+  border-radius: var(--radius-sm);
 }
 
+/* 移除渐变叠加层 — 简化设计 */
 .game-card::before {
   content: '';
   @apply absolute inset-0 opacity-0 transition-opacity duration-300;
   pointer-events: none;
-  background: linear-gradient(135deg, rgba(0,240,255,0.05), transparent 60%);
+  background: linear-gradient(135deg, oklch(0.85 0.18 195 / 0.03), transparent 50%);
 }
 
 .game-card:hover {
-  border-color: var(--neon-blue);
-  box-shadow: 0 0 10px rgba(0,240,255,0.2), 0 0 25px rgba(0,240,255,0.1);
+  border-color: oklch(0.85 0.18 195 / 0.4);
+  box-shadow: 0 0 8px oklch(0.85 0.18 195 / 0.15);
   transform: translateY(-2px);
 }
 
@@ -233,7 +280,7 @@ p {
 }
 
 .game-card:hover .card-icon {
-  filter: drop-shadow(0 0 6px var(--neon-blue));
+  filter: drop-shadow(0 0 4px var(--neon-blue));
 }
 
 /* ============================================
@@ -283,57 +330,60 @@ p {
 }
 
 /* ============================================
-   Input Fields
+   Input Fields — 清晰的焦点状态
    ============================================ */
 
 .neon-input {
-  @apply w-full px-4 py-3 bg-cyber-surface border border-cyber-border text-gray-300 font-mono text-sm outline-none transition-all duration-200;
+  @apply w-full px-4 py-3 bg-cyber-surface border border-cyber-border font-mono text-sm outline-none transition-all duration-200;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
 }
 
 .neon-input:focus {
   border-color: var(--neon-blue);
-  box-shadow: 0 0 8px rgba(0,240,255,0.2), inset 0 0 8px rgba(0,240,255,0.05);
+  box-shadow: 0 0 8px oklch(0.85 0.18 195 / 0.2);
 }
 
 .neon-input::placeholder {
-  color: #4a4a6a;
+  color: var(--text-hint);
 }
 
 /* ============================================
-   Neon Tag
+   Neon Tag — 简洁的标签样式
    ============================================ */
 
 .neon-tag {
   @apply text-[10px] font-pixel px-2 py-1 border;
   letter-spacing: 0.5px;
+  border-radius: 4px;
 }
 
 .neon-tag-blue {
   @apply neon-tag;
   color: var(--neon-blue);
-  border-color: rgba(0,240,255,0.4);
-  background: rgba(0,240,255,0.06);
+  border-color: oklch(0.85 0.18 195 / 0.35);
+  background: oklch(0.85 0.18 195 / 0.05);
 }
 
 .neon-tag-purple {
   @apply neon-tag;
   color: var(--neon-purple);
-  border-color: rgba(176,38,255,0.4);
-  background: rgba(176,38,255,0.06);
+  border-color: oklch(0.55 0.20 285 / 0.35);
+  background: oklch(0.55 0.20 285 / 0.05);
 }
 
 .neon-tag-pink {
   @apply neon-tag;
   color: var(--neon-pink);
-  border-color: rgba(255,45,149,0.4);
-  background: rgba(255,45,149,0.06);
+  border-color: oklch(0.65 0.22 345 / 0.35);
+  background: oklch(0.65 0.22 345 / 0.05);
 }
 
 .neon-tag-green {
   @apply neon-tag;
   color: var(--neon-green);
-  border-color: rgba(57,255,20,0.4);
-  background: rgba(57,255,20,0.06);
+  border-color: oklch(0.82 0.18 145 / 0.35);
+  background: oklch(0.82 0.18 145 / 0.05);
 }
 
 /* ============================================
@@ -485,7 +535,7 @@ canvas {
 }
 
 /* ============================================
-   Typography Helpers — apply consistent type scale
+   Typography Helpers — 使用新的色彩变量
    ============================================ */
 
 .title-hero {
@@ -508,18 +558,18 @@ canvas {
 }
 .text-meta {
   font-size: var(--fs-body-xs);
-  color: #6e6e85;
+  color: var(--text-muted);
   letter-spacing: 0.02em;
 }
 .text-body {
   font-size: var(--fs-body-md);
   line-height: var(--lh-base);
-  color: #b8b8c8;
+  color: var(--text-secondary);
 }
 .text-lead {
   font-size: var(--fs-body-lg);
   line-height: var(--lh-base);
-  color: #d0d0dc;
+  color: var(--text-primary);
 }
 
 /* ============================================
@@ -634,23 +684,23 @@ canvas {
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  border: 1px solid rgba(58,58,92,0.4);
-  background: rgba(26,26,46,0.5);
-  border-radius: 6px;
+  border: 1px solid oklch(0.30 0.05 260 / 0.4);
+  background: oklch(0.18 0.03 260 / 0.5);
+  border-radius: var(--radius-sm);
   transition: all 0.2s ease;
 }
 .leaderboard-item:hover {
-  border-color: rgba(0,240,255,0.3);
-  background: rgba(0,240,255,0.05);
+  border-color: oklch(0.85 0.18 195 / 0.3);
+  background: oklch(0.85 0.18 195 / 0.05);
 }
 .leaderboard-item.rank-1 {
-  border-color: rgba(255,230,0,0.4);
-  background: rgba(255,230,0,0.08);
+  border-color: oklch(0.88 0.18 95 / 0.4);
+  background: oklch(0.88 0.18 95 / 0.08);
 }
 .leaderboard-item.rank-2,
 .leaderboard-item.rank-3 {
-  border-color: rgba(57,255,20,0.3);
-  background: rgba(57,255,20,0.05);
+  border-color: oklch(0.82 0.18 145 / 0.3);
+  background: oklch(0.82 0.18 145 / 0.05);
 }
 .leaderboard-rank {
   font-family: 'Press Start 2P', monospace;
@@ -660,12 +710,12 @@ canvas {
 }
 .leaderboard-avatar {
   border-radius: 50%;
-  border: 2px solid rgba(58,58,92,0.5);
+  border: 2px solid oklch(0.30 0.05 260 / 0.5);
 }
 .leaderboard-name {
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
-  color: #b8b8c8;
+  color: var(--text-secondary);
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -679,15 +729,16 @@ canvas {
 }
 
 /* ============================================
-   Card improvements — better visual hierarchy
+   Card improvements — 更精致的卡片
    ============================================ */
 .cyber-card {
-  background: linear-gradient(180deg, rgba(37,37,64,0.95), rgba(26,26,46,0.9));
-  border: 1px solid rgba(58,58,92,0.5);
-  border-radius: 8px;
+  background: oklch(0.24 0.04 260);
+  border: 1px solid oklch(0.30 0.05 260 / 0.5);
+  border-radius: var(--radius-sm);
   position: relative;
   overflow: hidden;
 }
+/* 简化顶部发光线 — 单色柔和渐变 */
 .cyber-card::before {
   content: '';
   position: absolute;
@@ -695,14 +746,14 @@ canvas {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0,240,255,0.3), transparent);
+  background: linear-gradient(90deg, transparent, oklch(0.85 0.18 195 / 0.2), transparent);
 }
 .cyber-card-hover {
   transition: all 0.25s ease;
 }
 .cyber-card-hover:hover {
-  border-color: rgba(0,240,255,0.4);
-  box-shadow: 0 4px 20px rgba(0,240,255,0.1), inset 0 1px 0 rgba(0,240,255,0.05);
+  border-color: oklch(0.85 0.18 195 / 0.35);
+  box-shadow: 0 4px 16px oklch(0.85 0.18 195 / 0.08);
   transform: translateY(-1px);
 }
 
@@ -715,7 +766,7 @@ canvas {
   gap: 10px;
   padding-bottom: 12px;
   margin-bottom: 16px;
-  border-bottom: 1px solid rgba(58,58,92,0.4);
+  border-bottom: 1px solid oklch(0.30 0.05 260 / 0.4);
 }
 .section-title-icon {
   display: flex;
@@ -723,13 +774,13 @@ canvas {
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 6px;
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(58,58,92,0.3);
+  border-radius: var(--radius-sm);
+  background: oklch(0.12 0.02 260);
+  border: 1px solid oklch(0.30 0.05 260 / 0.3);
 }
 
 /* ============================================
-   Button improvements — better states
+   Button improvements — 更好的交互状态
    ============================================ */
 .cyber-btn {
   font-family: 'Press Start 2P', monospace;
@@ -742,6 +793,7 @@ canvas {
   letter-spacing: 0.05em;
   position: relative;
   overflow: hidden;
+  border-radius: var(--radius-sm);
 }
 .cyber-btn::before {
   content: '';
@@ -752,7 +804,7 @@ canvas {
   transition: opacity 0.2s ease;
 }
 .cyber-btn:hover::before {
-  opacity: 0.08;
+  opacity: 0.06;
 }
 .cyber-btn:active {
   transform: scale(0.97);
@@ -779,12 +831,12 @@ canvas {
   margin-bottom: 8px;
   font-family: 'Press Start 2P', monospace;
   font-size: 10px;
-  color: #6e6e85;
+  color: var(--text-muted);
 }
 .form-hint {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  color: #4a4a6a;
+  color: var(--text-hint);
   font-variant-numeric: tabular-nums;
 }
 
@@ -826,7 +878,7 @@ canvas {
 .empty-state-text {
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
-  color: #6e6e85;
+  color: var(--text-muted);
   margin-bottom: 16px;
 }
 

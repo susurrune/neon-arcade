@@ -31,27 +31,24 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-[80vh] flex items-center justify-center px-4">
+    <main className="min-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         {/* Logo + Title */}
         <div className="text-center mb-8">
-          <img src={logoSvg} alt="NEON ARCADE" className="h-12 w-auto mx-auto mb-4 drop-shadow-[0_0_12px_rgba(0,240,255,0.4)]" />
+          <img src={logoSvg} alt="NEON ARCADE" className="h-10 w-auto mx-auto mb-4" style={{ filter: 'drop-shadow(0 0 8px oklch(0.85 0.18 195 / 0.5))' }} />
           <h1 className="font-pixel text-base md:text-lg neon-text-blue mb-2">LOGIN</h1>
-          <p className="text-sm text-gray-500 font-mono">回到赛博世界</p>
+          <p className="text-sm text-text-muted font-mono">回到赛博世界</p>
         </div>
 
         {/* Login card */}
-        <div className="bg-cyber-card border border-cyber-border p-6 relative">
-          {/* Corner decorations */}
-          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-neon-blue/40 pointer-events-none" />
-          <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-neon-blue/40 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-neon-blue/40 pointer-events-none" />
-          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-neon-blue/40 pointer-events-none" />
+        <div className="cyber-card p-6 relative">
+          {/* 简化装饰 — 单色顶线 */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-blue/30 to-transparent" />
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block font-pixel text-[10px] md:text-[11px] text-gray-500 mb-1.5 flex items-center gap-1.5">
-                <PixelIcon type="user" size={10} color="#666" />
+            <div className="form-group">
+              <label className="form-label flex items-center gap-1.5">
+                <PixelIcon type="user" size={10} color="var(--text-muted)" />
                 USERNAME
               </label>
               <input
@@ -64,9 +61,9 @@ export default function LoginPage() {
                 autoFocus
               />
             </div>
-            <div>
-              <label className="block font-pixel text-[10px] md:text-[11px] text-gray-500 mb-1.5 flex items-center gap-1.5">
-                <PixelIcon type="bolt" size={10} color="#666" />
+            <div className="form-group">
+              <label className="form-label flex items-center gap-1.5">
+                <PixelIcon type="bolt" size={10} color="var(--text-muted)" />
                 PASSWORD
               </label>
               <input
@@ -80,7 +77,7 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <p className="text-sm text-neon-pink font-mono animate-glow-pulse">{error}</p>
+              <p className="text-sm neon-text-pink font-mono animate-glow-pulse">{error}</p>
             )}
             {success && (
               <p className="text-sm neon-text-green font-mono animate-glow-pulse">{success}</p>
@@ -89,14 +86,14 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading || !username || !password}
-              className="neon-btn-blue w-full text-[10px] md:text-xs py-2.5 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="cyber-btn cyber-btn-lg w-full border-neon-blue text-neon-blue disabled:opacity-30 disabled:cursor-not-allowed"
             >
               {loading ? '...' : '登录'}
             </button>
           </form>
         </div>
 
-        <p className="text-center mt-6 font-mono text-sm text-gray-600">
+        <p className="text-center mt-6 font-mono text-sm text-text-muted">
           没有账号？
           <Link to="/register" className="text-neon-blue hover:underline ml-1">注册</Link>
         </p>
