@@ -852,10 +852,11 @@ export class UniverseRenderer {
   private updateAnimations(dt: number) {
     const time = this.engine.getElapsed()
 
-    // 恒星呼吸
+    // 恒星呼吸 + 缓慢自转
     for (const [id, mesh] of this.starMeshes) {
       const pulse = 1 + Math.sin(time * 2 + id.length) * 0.08
       mesh.scale.setScalar(pulse)
+      mesh.rotation.y += dt * 0.15  // 缓慢自转
     }
 
     // 行星自转
